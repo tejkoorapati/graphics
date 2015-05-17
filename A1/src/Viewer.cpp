@@ -148,7 +148,7 @@ void Viewer::paintGL() {
         for(int x = 0; x < mGame->getWidth()  ; x ++) {
             if(mGame->get(y,x) != -1) {
 
-                cout <<  "X: "<< x << " Y: "<< y << endl;
+                //cout <<  "X: "<< x << " Y: "<< y << endl;
                 drawSquareAt(x,y);
             }
         }
@@ -167,17 +167,26 @@ void Viewer::resizeGL(int width, int height) {
 }
 
 void Viewer::mousePressEvent ( QMouseEvent * event ) {
-    std::cerr << "Stub: button " << event->button() << " pressed\n";
+    //std::cerr << "Stub: button " << event->button() << " pressed\n";
     buttonPressed = event->button();
-
+    prev_x = event->x();
+    prev_y = event->y();
 }
 
 void Viewer::mouseReleaseEvent ( QMouseEvent * event ) {
-    std::cerr << "Stub: button " << event->button() << " released\n";
+    //std::cerr << "Stub: button " << event->button() << " released\n";
 }
 
 void Viewer::mouseMoveEvent ( QMouseEvent * event ) {
-    std::cerr << "Stub: Motion at " << event->x() << ", " << event->y() << ", Button: " << buttonPressed << std::endl;
+    //std::cerr << "Stub: Motion at " << event->x() << ", " << event->y() << ", Button: " << buttonPressed << std::endl;
+    int diffx = event->x() - prev_x;
+    int diffy = event->y() - prev_y;
+    cout<<"DIFF : "<< diffy<<endl;
+    rotateWorld(prev_y*diffy*.001,1,0,0);
+
+    prev_x = event->x();
+    prev_y = event->y();
+
 }
 
 QMatrix4x4 Viewer::getCameraMatrix() {

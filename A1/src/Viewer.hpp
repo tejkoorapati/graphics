@@ -1,10 +1,13 @@
 #ifndef CS488_VIEWER_HPP
 #define CS488_VIEWER_HPP
 
+#define PI 3.14159265
+
 #include <QGLWidget>
 #include <QGLShaderProgram>
 #include <QMatrix4x4>
 #include <QtGlobal>
+#include <math.h>
 #include "game.hpp"
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 1, 0))
@@ -74,6 +77,9 @@ private:
     
     QTimer* mTimer;
     QGLShaderProgram mProgram;
+
+    int prev_x =-1;
+    int prev_y = -1;
 };
 
 #endif
