@@ -21,23 +21,14 @@ Viewer::Viewer(const QGLFormat& format, QWidget *parent)
 {
     mTimer = new QTimer(this);
     connect(mTimer, SIGNAL(timeout()), this, SLOT(update()));
-    mTimer->start(5000/30);
+    mTimer->start(500/30);
 
     mGame = new Game(10,20);
+    gameTimer = new QTimer(this);
+    connect(gameTimer, SIGNAL(timeout()), this, SLOT(gameTick()));
+    cout<<"Game speed: "<<( (5000 - (80 * gameSpeed * 5) )/ 30) <<endl;
+    gameTimer->start( (5000 - (80 * gameSpeed * 5 ) )/ 30);
 
-    //    mModelMatrices[0].rotate(10, QVector3D(0,0,1));
-    //    mModelMatrices[0].translate(-5,-10,0);
-    //    mModelMatrices[1].translate(5,-10,0);
-    //    mModelMatrices[1].rotate(90, QVector3D(0,0,1));
-
-    /*
-    mModelMatrices[2].translate(-5,10,0);
-    mModelMatrices[2].rotate(270, QVector3D(0,0,1));
-    */
-    /*
-    mModelMatrices[3].translate(5,10,0);
-    mModelMatrices[3].rotate(180, QVector3D(0,0,1));
-    */
 
 }
 
@@ -76,6 +67,10 @@ void Viewer::initializeGL() {
         std::cerr << "Cannot link shaders." << std::endl;
         return;
     }
+
+    int colorLocation = mProgram.uniformLocation("color");
+   // QVector4D color(0, 1, 0, 1);
+   // mProgram.setUniformValue(colorLocation, color);
 
     float triangleData[] = {
         //  X     Y     Z
@@ -131,19 +126,17 @@ void Viewer::initializeGL() {
     // mPerspMatrixLocation = mProgram.uniformLocation("cameraMatrix");
     mMvpMatrixLocation = mProgram.uniformLocation("mvpMatrix");
 
+
 }
 
 void Viewer::paintGL() {
     // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 1, 0))
     mVertexArrayObject.bind();
 #endif
 
-    mGame->tick();
     for(int y = 0 ; y < mGame->getHeight() + 4; y ++){
         for(int x = 0; x < mGame->getWidth()  ; x ++) {
             if(mGame->get(y,x) != -1) {
@@ -181,8 +174,20 @@ void Viewer::mouseMoveEvent ( QMouseEvent * event ) {
     //std::cerr << "Stub: Motion at " << event->x() << ", " << event->y() << ", Button: " << buttonPressed << std::endl;
     int diffx = event->x() - prev_x;
     int diffy = event->y() - prev_y;
-    cout<<"DIFF : "<< diffy<<endl;
-    rotateWorld(prev_y*diffy*.001,1,0,0);
+    int signx = (event->x() > prev_x) ? 1 : -1;
+    int signy = (event->y() > prev_y) ? 1 : -1;
+    cout<<"signy : "<< signy <<endl;
+
+    if(buttonPressed == 1){
+        rotateWorld(signy*abs(diffy)*.5,1,0,0);
+    }
+    else if (buttonPressed == 2){
+        rotateWorld(signx*abs(diffx)*.5,0,1,0);
+    }
+    else if (buttonPressed == 3){
+        rotateWorld(signx*abs(diffx)*.5 ,0,0,1);
+    }
+
 
     prev_x = event->x();
     prev_y = event->y();
@@ -215,30 +220,92 @@ void Viewer::scaleWorld(float x, float y, float z) {
 
 void Viewer::drawSquareAt(int x, int y){
 
+
     //Initial condiditions
-    for(int j = 0; j < 2; j ++){
+    for(int j = 0; j <12; j ++){
         mModelMatrices[j].setToIdentity();
-//        mModelMatrices[j].scale(0.5,0.5,0.5);
+//                mModelMatrices[j].scale(0.5,0.5,0.5);
         mModelMatrices[j].translate(-5 + x , -10 + y,0);
     }
 
     //front face
     mModelMatrices[0].translate(0,0,0);
-    mModelMatrices[0].rotate(0, QVector3D(0,0,1));
+    mModelMatrices[0].rotate(0, QVector3D(0,0,0));
+
     mModelMatrices[1].translate(1,1.0,0);
     mModelMatrices[1].rotate(180, QVector3D(0,0,1));
 
+    //back face
+    mModelMatrices[2].translate(0,0,-1);
+    mModelMatrices[2].rotate(0, QVector3D(0,0,1));
+
+    mModelMatrices[3].translate(1,1.0,-1);
+    mModelMatrices[3].rotate(180, QVector3D(0,0,1));
+
+    //top face
+
+
+    mModelMatrices[4].translate(0,1,-1);
+    mModelMatrices[4].rotate(90, QVector3D(1,0,0));
+
+
+    mModelMatrices[5].translate(1,1,0);
+    mModelMatrices[5].rotate(90, QVector3D(1,0,0));
+    mModelMatrices[5].rotate(180, QVector3D(0,0,1));
+
+
+    //bottom face
+    mModelMatrices[6].translate(0,0,-1);
+    mModelMatrices[6].rotate(90, QVector3D(1,0,0));
+
+
+    mModelMatrices[7].translate(1,0,0);
+    mModelMatrices[7].rotate(90, QVector3D(1,0,0));
+    mModelMatrices[7].rotate(180, QVector3D(0,0,1));
+
+    //left face
+    mModelMatrices[8].translate(0,0,0);
+    mModelMatrices[8].rotate(90, QVector3D(0,1,0));
+
+
+    mModelMatrices[9].translate(0,1,-1);
+    mModelMatrices[9].rotate(90, QVector3D(0,1,0));
+    mModelMatrices[9].rotate(180, QVector3D(0,0,1));
+
+
+    //right face
+    mModelMatrices[10].translate(1,0,0);
+    mModelMatrices[10].rotate(90, QVector3D(0,1,0));
+
+
+    mModelMatrices[11].translate(1,1,-1);
+    mModelMatrices[11].rotate(90, QVector3D(0,1,0));
+    mModelMatrices[11].rotate(180, QVector3D(0,0,1));
 
 
     //draw shape
-    for (int i = 0; i < 2; i++) {
-
-
+    for (int i = 0; i < 12; i++) {
         mProgram.setUniformValue(mMvpMatrixLocation, getCameraMatrix() * mModelMatrices[i]);
-
         glDrawArrays(GL_TRIANGLES, 0, 3);
     }
 
 
 
+}
+
+void Viewer::decreaseGameSpeed(){
+    if (gameSpeed > 1) {
+        gameSpeed--;
+    }
+}
+
+
+void Viewer::increaseGameSpeed(){
+    if (gameSpeed < 10){
+        gameSpeed++;
+    }
+}
+
+void Viewer::gameTick(){
+    mGame->tick();
 }

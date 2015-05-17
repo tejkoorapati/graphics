@@ -32,6 +32,11 @@ public:
     // If you want to render a new frame, call do not call paintGL(),
     // instead, call update() to ensure that the view gets a paint 
     // event.
+    void increaseGameSpeed();
+    void decreaseGameSpeed();
+
+public slots:
+    void gameTick();
   
 protected:
 
@@ -51,6 +56,7 @@ protected:
     virtual void mouseMoveEvent ( QMouseEvent * event );
 
     int buttonPressed;
+    int gameSpeed=5;
 
 private:
 
@@ -76,6 +82,8 @@ private:
     QMatrix4x4 mTransformMatrix;
     
     QTimer* mTimer;
+    QTimer* gameTimer;
+
     QGLShaderProgram mProgram;
 
     int prev_x =-1;

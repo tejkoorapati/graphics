@@ -12,3 +12,7 @@ INCLUDEPATH += .
 # Input
 HEADERS += AppWindow.hpp Viewer.hpp game.hpp
 SOURCES += main.cpp AppWindow.cpp Viewer.cpp game.cpp
+
+DISTFILES += \
+    shader.frag \
+    shader.vert
