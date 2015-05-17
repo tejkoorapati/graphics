@@ -106,10 +106,12 @@ void AppWindow::createMenu() {
 
 void AppWindow::new_game(){
 
+    m_viewer->mGame->reset();
 }
 
 void AppWindow::reset(){
 
+    m_viewer->mGame->reset();
 }
 
 void AppWindow::wire_frame(){

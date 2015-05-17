@@ -5,6 +5,7 @@
 #include <QGLShaderProgram>
 #include <QMatrix4x4>
 #include <QtGlobal>
+#include "game.hpp"
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 1, 0))
 #include <QOpenGLBuffer>
@@ -12,7 +13,7 @@
 #else 
 #include <QGLBuffer>
 #endif
-
+using namespace std;
 class Viewer : public QGLWidget {
     
     Q_OBJECT
@@ -23,6 +24,7 @@ public:
     
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
+    Game* mGame;
 
     // If you want to render a new frame, call do not call paintGL(),
     // instead, call update() to ensure that the view gets a paint 
@@ -45,12 +47,15 @@ protected:
     // Called when the mouse moves
     virtual void mouseMoveEvent ( QMouseEvent * event );
 
+    int buttonPressed;
+
 private:
 
     QMatrix4x4 getCameraMatrix();
     void translateWorld(float x, float y, float z);
     void rotateWorld(float angle, float x, float y, float z);
     void scaleWorld(float x, float y, float z);
+    void drawSquareAt(int row, int col);
 
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 1, 0))
@@ -64,7 +69,7 @@ private:
     int mMvpMatrixLocation;
 
     QMatrix4x4 mPerspMatrix;
-    QMatrix4x4 mModelMatrices[4];
+    QMatrix4x4 mModelMatrices[12];
     QMatrix4x4 mTransformMatrix;
     
     QTimer* mTimer;

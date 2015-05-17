@@ -12,24 +12,33 @@
 
 Viewer::Viewer(const QGLFormat& format, QWidget *parent)
     : QGLWidget(format, parent)
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 1, 0))
+    #if (QT_VERSION >= QT_VERSION_CHECK(5, 1, 0))
     , mVertexBufferObject(QOpenGLBuffer::VertexBuffer)
     , mVertexArrayObject(this)
-#else
+    #else
     , mVertexBufferObject(QGLBuffer::VertexBuffer)
-#endif
+    #endif
 {
     mTimer = new QTimer(this);
     connect(mTimer, SIGNAL(timeout()), this, SLOT(update()));
-    mTimer->start(1000/30);
+    mTimer->start(5000/30);
 
-    mModelMatrices[0].translate(-5,-10,0);
-    mModelMatrices[1].translate(5,-10,0);
-    mModelMatrices[1].rotate(90, QVector3D(0,0,1));
+    mGame = new Game(10,20);
+
+    //    mModelMatrices[0].rotate(10, QVector3D(0,0,1));
+    //    mModelMatrices[0].translate(-5,-10,0);
+    //    mModelMatrices[1].translate(5,-10,0);
+    //    mModelMatrices[1].rotate(90, QVector3D(0,0,1));
+
+    /*
     mModelMatrices[2].translate(-5,10,0);
     mModelMatrices[2].rotate(270, QVector3D(0,0,1));
+    */
+    /*
     mModelMatrices[3].translate(5,10,0);
     mModelMatrices[3].rotate(180, QVector3D(0,0,1));
+    */
+
 }
 
 Viewer::~Viewer() {
@@ -70,9 +79,9 @@ void Viewer::initializeGL() {
 
     float triangleData[] = {
         //  X     Y     Z
-         0.0f, 0.0f, 0.0f,
-         1.0f, 0.0f, 0.0f,
-         0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f,
+        1.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f,
     };
 
 
@@ -121,6 +130,7 @@ void Viewer::initializeGL() {
 
     // mPerspMatrixLocation = mProgram.uniformLocation("cameraMatrix");
     mMvpMatrixLocation = mProgram.uniformLocation("mvpMatrix");
+
 }
 
 void Viewer::paintGL() {
@@ -128,16 +138,20 @@ void Viewer::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
+
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 1, 0))
     mVertexArrayObject.bind();
 #endif
 
+    mGame->tick();
+    for(int y = 0 ; y < mGame->getHeight() + 4; y ++){
+        for(int x = 0; x < mGame->getWidth()  ; x ++) {
+            if(mGame->get(y,x) != -1) {
 
-    for (int i = 0; i < 4; i++) {
-
-        mProgram.setUniformValue(mMvpMatrixLocation, getCameraMatrix() * mModelMatrices[i]);
-
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+                cout <<  "X: "<< x << " Y: "<< y << endl;
+                drawSquareAt(x,y);
+            }
+        }
     }
 }
 
@@ -154,6 +168,8 @@ void Viewer::resizeGL(int width, int height) {
 
 void Viewer::mousePressEvent ( QMouseEvent * event ) {
     std::cerr << "Stub: button " << event->button() << " pressed\n";
+    buttonPressed = event->button();
+
 }
 
 void Viewer::mouseReleaseEvent ( QMouseEvent * event ) {
@@ -161,7 +177,7 @@ void Viewer::mouseReleaseEvent ( QMouseEvent * event ) {
 }
 
 void Viewer::mouseMoveEvent ( QMouseEvent * event ) {
-    std::cerr << "Stub: Motion at " << event->x() << ", " << event->y() << std::endl;
+    std::cerr << "Stub: Motion at " << event->x() << ", " << event->y() << ", Button: " << buttonPressed << std::endl;
 }
 
 QMatrix4x4 Viewer::getCameraMatrix() {
@@ -188,3 +204,32 @@ void Viewer::scaleWorld(float x, float y, float z) {
     mTransformMatrix.scale(x, y, z);
 }
 
+void Viewer::drawSquareAt(int x, int y){
+
+    //Initial condiditions
+    for(int j = 0; j < 2; j ++){
+        mModelMatrices[j].setToIdentity();
+//        mModelMatrices[j].scale(0.5,0.5,0.5);
+        mModelMatrices[j].translate(-5 + x , -10 + y,0);
+    }
+
+    //front face
+    mModelMatrices[0].translate(0,0,0);
+    mModelMatrices[0].rotate(0, QVector3D(0,0,1));
+    mModelMatrices[1].translate(1,1.0,0);
+    mModelMatrices[1].rotate(180, QVector3D(0,0,1));
+
+
+
+    //draw shape
+    for (int i = 0; i < 2; i++) {
+
+
+        mProgram.setUniformValue(mMvpMatrixLocation, getCameraMatrix() * mModelMatrices[i]);
+
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+    }
+
+
+
+}
