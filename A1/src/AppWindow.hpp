@@ -16,12 +16,15 @@ class AppWindow : public QMainWindow
 public:
     AppWindow();
 
+
 protected:
     void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *event);
 
 private:
     void createActions();
     void createMenu();
+
 
     // Each menu itself
     QMenu* m_menu_app;
@@ -31,12 +34,22 @@ private:
     vector<QAction*> m_draw_actions;
     Viewer* m_viewer;
 
+    void moveRight();
+    void moveLeft();
+    void dropPiece();
+    void rotateCW();
+    void rotateCCW();
+    void shiftPressed();
+    void shiftReleased();
+
 private slots:
     void new_game();
     void reset();
     void wire_frame();
     void face();
     void multi_coloured();
+
+
 };
 
 #endif

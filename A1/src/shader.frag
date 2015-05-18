@@ -1,12 +1,11 @@
 #version 330
 
-// uniform vec3 frag_color;
-uniform vec4 color;
+uniform vec4 frag_color;
 out vec4 finalColor;
 
 void main()
 {
-     //gl_FragColor = color
-    finalColor = color;
-    // gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    //gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    finalColor =  frag_color;
+    //gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }

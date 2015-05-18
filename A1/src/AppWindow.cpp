@@ -26,11 +26,30 @@ AppWindow::AppWindow() {
 void AppWindow::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_Escape) {
         QCoreApplication::instance()->quit();
-    } else if (event->key() == Qt::Key_T) {
-        std::cerr << "Hello!" << std::endl;
+    } else if (event->key() == Qt::Key_Right) {
+        moveRight();
+    } else if (event->key() == Qt::Key_Left) {
+        moveLeft();
+    } else if (event->key() == Qt::Key_Down) {
+        rotateCW();
+    } else if (event->key() == Qt::Key_Up) {
+        rotateCCW();
+    } else if (event->key() == Qt::Key_Space) {
+        dropPiece();
+    } else if (event->key() == Qt::Key_Shift) {
+       shiftPressed();
+       cout<<"Shift pressed"<<endl;
     } else {
         QWidget::keyPressEvent(event);
     }
+}
+
+void AppWindow::keyReleaseEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Shift) {
+           shiftReleased();
+           cout<<"Shift released"<<endl;
+        }
 }
 
 void AppWindow::createActions() {
@@ -106,21 +125,56 @@ void AppWindow::createMenu() {
 
 void AppWindow::new_game(){
 
-    m_viewer->mGame->reset();
+    m_viewer->m_game->reset();
 }
 
 void AppWindow::reset(){
 
-    m_viewer->mGame->reset();
+    m_viewer->resetWorld();
 }
 
 void AppWindow::wire_frame(){
-
+    m_viewer->setWireMode();
 }
 void AppWindow::face(){
-
+    m_viewer->setFaceMode();
 }
 
 void AppWindow::multi_coloured(){
+    m_viewer->setFaceMode();
+}
 
+void AppWindow::moveRight()
+{
+    m_viewer->m_game->moveRight();
+}
+
+void AppWindow::moveLeft()
+{
+    m_viewer->m_game->moveLeft();
+}
+
+void AppWindow::dropPiece()
+{
+    m_viewer->m_game->drop();
+}
+
+void AppWindow::rotateCW()
+{
+    m_viewer->m_game->rotateCW();
+}
+
+void AppWindow::rotateCCW()
+{
+    m_viewer->m_game->rotateCCW();
+}
+
+void AppWindow::shiftPressed()
+{
+    m_viewer->setShiftState(true);
+}
+
+void AppWindow::shiftReleased()
+{
+    m_viewer->setShiftState(false);
 }

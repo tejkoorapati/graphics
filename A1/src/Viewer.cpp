@@ -23,11 +23,14 @@ Viewer::Viewer(const QGLFormat& format, QWidget *parent)
     connect(mTimer, SIGNAL(timeout()), this, SLOT(update()));
     mTimer->start(500/30);
 
-    mGame = new Game(10,20);
+
+    m_game = new Game(10,20);
     gameTimer = new QTimer(this);
     connect(gameTimer, SIGNAL(timeout()), this, SLOT(gameTick()));
     cout<<"Game speed: "<<( (5000 - (80 * gameSpeed * 5) )/ 30) <<endl;
     gameTimer->start( (5000 - (80 * gameSpeed * 5 ) )/ 30);
+    rotateTimer = new QTimer(this);
+    connect(rotateTimer,SIGNAL(timeout()),this,SLOT(trackSpeed()));
 
 
 }
@@ -68,16 +71,13 @@ void Viewer::initializeGL() {
         return;
     }
 
-    int colorLocation = mProgram.uniformLocation("color");
-   // QVector4D color(0, 1, 0, 1);
-   // mProgram.setUniformValue(colorLocation, color);
-
     float triangleData[] = {
         //  X     Y     Z
         0.0f, 0.0f, 0.0f,
         1.0f, 0.0f, 0.0f,
         0.0f, 1.0f, 0.0f,
     };
+
 
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 1, 0))
@@ -125,6 +125,11 @@ void Viewer::initializeGL() {
 
     // mPerspMatrixLocation = mProgram.uniformLocation("cameraMatrix");
     mMvpMatrixLocation = mProgram.uniformLocation("mvpMatrix");
+    colorLocation = mProgram.uniformLocation("frag_color");
+
+    QColor color(0, 255, 0, 255);
+
+    mProgram.setUniformValue(colorLocation, color);
 
 
 }
@@ -137,13 +142,43 @@ void Viewer::paintGL() {
     mVertexArrayObject.bind();
 #endif
 
-    for(int y = 0 ; y < mGame->getHeight() + 4; y ++){
-        for(int x = 0; x < mGame->getWidth()  ; x ++) {
-            if(mGame->get(y,x) != -1) {
+    makeWell();
+    for(int y = 0 ; y < m_game->getHeight() + 4; y ++){
+        for(int x = 0; x < m_game->getWidth()  ; x ++) {
+            int blockID = m_game->get(y,x);
+            if(m_game->get(y,x) != -1) {
 
-                //cout <<  "X: "<< x << " Y: "<< y << endl;
-                drawSquareAt(x,y);
+                if(blockID == 0)
+                    drawCubeAt(x,y,Qt::red);
+                else if (blockID == 1)
+                    drawCubeAt(x,y,Qt::green);
+                else if (blockID == 2)
+                    drawCubeAt(x,y,Qt::blue);
+                else if (blockID == 3)
+                    drawCubeAt(x,y,Qt::magenta);
+                else if (blockID == 4)
+                    drawCubeAt(x,y,Qt::yellow);
+                else if (blockID == 5)
+                    drawCubeAt(x,y,Qt::darkGray);
+                else if (blockID == 6)
+                    drawCubeAt(x,y,Qt::cyan);
+                else if (blockID == 7)
+                    drawCubeAt(x,y,Qt::white);
             }
+        }
+    }
+
+    if(autoRotate){
+        if(lastRotateAxis == 'x'){
+            rotateWorld(10,1,0,0);
+        }
+        else if (lastRotateAxis == 'y'){
+            rotateWorld(10,0,1,0);
+
+        }
+        else if (lastRotateAxis == 'z'){
+            rotateWorld(10,0,0,1);
+
         }
     }
 }
@@ -160,14 +195,27 @@ void Viewer::resizeGL(int width, int height) {
 }
 
 void Viewer::mousePressEvent ( QMouseEvent * event ) {
-    //std::cerr << "Stub: button " << event->button() << " pressed\n";
+    std::cerr << "Stub: button " << event->button() << " pressed\n";
+    autoRotate = false;
     buttonPressed = event->button();
     prev_x = event->x();
     prev_y = event->y();
+    xBeforeTick = event->x();
+    yBeforeTick = event->y();
+    rotateTimer->start(500);
 }
 
 void Viewer::mouseReleaseEvent ( QMouseEvent * event ) {
     //std::cerr << "Stub: button " << event->button() << " released\n";
+    rotateTimer->stop();
+    cout<<lastRotateAxis<<endl<<speed_x<<endl;
+    if( (lastRotateAxis = 'x' && speed_x > 0) ||
+            (lastRotateAxis = 'y' && speed_y > 0) ||
+            (lastRotateAxis = 'z' && speed_x > 0))
+    {
+        autoRotate = true;
+    }
+
 }
 
 void Viewer::mouseMoveEvent ( QMouseEvent * event ) {
@@ -176,16 +224,51 @@ void Viewer::mouseMoveEvent ( QMouseEvent * event ) {
     int diffy = event->y() - prev_y;
     int signx = (event->x() > prev_x) ? 1 : -1;
     int signy = (event->y() > prev_y) ? 1 : -1;
-    cout<<"signy : "<< signy <<endl;
+    //cout<<"diffx : "<< diffx <<endl;
+
+    if(shiftState){
+        if(signx == 1){
+            if(diffx > 0){
+                worldScale += 0.01;
+                worldScale = 1.05;
+            }
+            else{
+                worldScale -= 0.01;
+                worldScale = 0.95;
+            }
+        }
+        else{
+            if(diffx < 0){
+                worldScale -= 0.01;
+                worldScale = 0.95;
+            }
+            else{
+                worldScale += 0.01;
+                worldScale = 1.05;
+            }
+        }
+        cout<<"Scale :"<<worldScale<<endl;
+        scaleWorld(worldScale,worldScale,worldScale);
+        prev_x = event->x();
+        prev_y = event->y();
+        lastRotateAxis = 'a';
+        return;
+    }
 
     if(buttonPressed == 1){
         rotateWorld(signy*abs(diffy)*.5,1,0,0);
+        lastRotateAxis = 'x';
+        rotateSign = signy;
     }
     else if (buttonPressed == 2){
         rotateWorld(signx*abs(diffx)*.5,0,1,0);
+        lastRotateAxis = 'y';
+        rotateSign = signx;
     }
-    else if (buttonPressed == 3){
+    else if (buttonPressed == 4){
         rotateWorld(signx*abs(diffx)*.5 ,0,0,1);
+        lastRotateAxis = 'z';
+        rotateSign = signx;
     }
 
 
@@ -218,13 +301,12 @@ void Viewer::scaleWorld(float x, float y, float z) {
     mTransformMatrix.scale(x, y, z);
 }
 
-void Viewer::drawSquareAt(int x, int y){
+void Viewer::drawCubeAt(int x, int y, QColor color){
 
 
     //Initial condiditions
     for(int j = 0; j <12; j ++){
         mModelMatrices[j].setToIdentity();
-//                mModelMatrices[j].scale(0.5,0.5,0.5);
         mModelMatrices[j].translate(-5 + x , -10 + y,0);
     }
 
@@ -286,11 +368,29 @@ void Viewer::drawSquareAt(int x, int y){
     //draw shape
     for (int i = 0; i < 12; i++) {
         mProgram.setUniformValue(mMvpMatrixLocation, getCameraMatrix() * mModelMatrices[i]);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        mProgram.setUniformValue(colorLocation, color);
+        glEnable(GL_DEPTH_TEST);
+        glDrawArrays(drawMode, 0, 3);
     }
 
 
 
+}
+
+void Viewer::makeWell()
+{
+    //leftwall
+    int x,y;
+    for(y = m_game->getHeight()-1; y >= 0; y --){
+        drawCubeAt(x-1,y,Qt::black);
+        drawCubeAt( m_game->getWidth(), y,Qt::black );
+    }
+    drawCubeAt(x-1,y,Qt::black);
+    //bottomwall
+    for(x = 0; x < m_game->getWidth(); x ++){
+        drawCubeAt(x,y,Qt::black);
+    }
+    drawCubeAt(x,y,Qt::black);
 }
 
 void Viewer::decreaseGameSpeed(){
@@ -307,5 +407,39 @@ void Viewer::increaseGameSpeed(){
 }
 
 void Viewer::gameTick(){
-    mGame->tick();
+    m_game->tick();
+}
+
+void Viewer::trackSpeed()
+{
+    speed_x = prev_x - xBeforeTick;
+    speed_y = prev_y - yBeforeTick;
+    xBeforeTick = prev_x;
+    yBeforeTick = prev_y;
+
+}
+
+void Viewer::setFaceMode(){
+    drawMode = GL_TRIANGLES;
+}
+
+void Viewer::setMultiMode(){
+
+}
+
+void Viewer::setShiftState(bool state)
+{
+    shiftState = state;
+}
+
+void Viewer::resetWorld()
+{
+    mTransformMatrix.setToIdentity();
+
+}
+
+void Viewer::setWireMode(){
+    drawMode = GL_LINE_LOOP;
+
+
 }

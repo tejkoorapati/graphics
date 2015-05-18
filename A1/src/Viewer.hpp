@@ -27,16 +27,21 @@ public:
     
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
-    Game* mGame;
+    Game* m_game;
 
     // If you want to render a new frame, call do not call paintGL(),
     // instead, call update() to ensure that the view gets a paint 
     // event.
     void increaseGameSpeed();
     void decreaseGameSpeed();
-
+    void setWireMode();
+    void setFaceMode();
+    void setMultiMode();
+    void setShiftState(bool state);
+    void resetWorld();
 public slots:
     void gameTick();
+    void trackSpeed();
   
 protected:
 
@@ -56,7 +61,7 @@ protected:
     virtual void mouseMoveEvent ( QMouseEvent * event );
 
     int buttonPressed;
-    int gameSpeed=5;
+    int gameSpeed=3;
 
 private:
 
@@ -64,7 +69,10 @@ private:
     void translateWorld(float x, float y, float z);
     void rotateWorld(float angle, float x, float y, float z);
     void scaleWorld(float x, float y, float z);
-    void drawSquareAt(int row, int col);
+    void drawCubeAt(int row, int col, QColor color);
+    void makeWell();
+
+
 
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 1, 0))
@@ -76,6 +84,9 @@ private:
 
     int mVertexLocation;
     int mMvpMatrixLocation;
+    int colorLocation;
+
+    int drawMode = GL_TRIANGLES;
 
     QMatrix4x4 mPerspMatrix;
     QMatrix4x4 mModelMatrices[12];
@@ -83,11 +94,24 @@ private:
     
     QTimer* mTimer;
     QTimer* gameTimer;
+    QTimer* rotateTimer;
 
     QGLShaderProgram mProgram;
 
     int prev_x =-1;
     int prev_y = -1;
+
+    bool shiftState = false;
+    float worldScale = 1;
+
+    bool autoRotate;
+    int rotateSign;
+    int speed_x=0;
+    int speed_y=0;
+    int xBeforeTick;
+    int yBeforeTick;
+    char lastRotateAxis;
+
 };
 
 #endif
