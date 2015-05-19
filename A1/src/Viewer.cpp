@@ -147,37 +147,21 @@ void Viewer::paintGL() {
         for(int x = 0; x < m_game->getWidth()  ; x ++) {
             int blockID = m_game->get(y,x);
             if(m_game->get(y,x) != -1) {
-
-                if(blockID == 0)
-                    drawCubeAt(x,y,Qt::red);
-                else if (blockID == 1)
-                    drawCubeAt(x,y,Qt::green);
-                else if (blockID == 2)
-                    drawCubeAt(x,y,Qt::blue);
-                else if (blockID == 3)
-                    drawCubeAt(x,y,Qt::magenta);
-                else if (blockID == 4)
-                    drawCubeAt(x,y,Qt::yellow);
-                else if (blockID == 5)
-                    drawCubeAt(x,y,Qt::darkGray);
-                else if (blockID == 6)
-                    drawCubeAt(x,y,Qt::cyan);
-                else if (blockID == 7)
-                    drawCubeAt(x,y,Qt::white);
+                drawCubeAt(x,y,colorList[blockID]);
             }
         }
     }
 
     if(autoRotate){
         if(lastRotateAxis == 'x'){
-            rotateWorld(10,1,0,0);
+            rotateWorld(5*rotateSign,1,0,0);
         }
         else if (lastRotateAxis == 'y'){
-            rotateWorld(10,0,1,0);
+            rotateWorld(5*rotateSign,0,1,0);
 
         }
         else if (lastRotateAxis == 'z'){
-            rotateWorld(10,0,0,1);
+            rotateWorld(5*rotateSign,0,0,1);
 
         }
     }
@@ -202,17 +186,20 @@ void Viewer::mousePressEvent ( QMouseEvent * event ) {
     prev_y = event->y();
     xBeforeTick = event->x();
     yBeforeTick = event->y();
-    rotateTimer->start(500);
+    rotateTimer->start(200);
 }
 
 void Viewer::mouseReleaseEvent ( QMouseEvent * event ) {
     //std::cerr << "Stub: button " << event->button() << " released\n";
     rotateTimer->stop();
-    cout<<lastRotateAxis<<endl<<speed_x<<endl;
-    if( (lastRotateAxis = 'x' && speed_x > 0) ||
-            (lastRotateAxis = 'y' && speed_y > 0) ||
-            (lastRotateAxis = 'z' && speed_x > 0))
+    trackSpeed();
+    if( (lastRotateAxis == 'x' && speed_x > 0) ||
+            (lastRotateAxis == 'y' && speed_y > 0) ||
+            (lastRotateAxis == 'z' && speed_x > 0))
     {
+       cout <<lastRotateAxis<< " axis" <<endl;
+       cout <<"with speed of " <<speed_x<<endl;
+       cout <<"direction of " << rotateSign <<endl;
         autoRotate = true;
     }
 
@@ -371,7 +358,6 @@ void Viewer::drawCubeAt(int x, int y, QColor color){
 
         glEnable(GL_DEPTH_TEST);
         if(multMode && color != Qt::black){
-            cout<<"setting color multi"<<endl;
             if(i%2==0){
                 mProgram.setUniformValue(colorLocation,colorList[i]);
             }
