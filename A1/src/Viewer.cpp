@@ -195,8 +195,9 @@ void Viewer::mouseReleaseEvent ( QMouseEvent * event ) {
     //std::cerr << "Stub: button " << event->button() << " released\n";
     rotateTimer->stop();
     trackSpeed();
-    if( (lastRotateAxis == 'x' && abs(speed_x) > 5) ||
-            (lastRotateAxis == 'y' && abs(speed_y)> 5) ||
+    cout<<"speed x: "<<speed_x <<", speed y: "<<speed_y<<endl;
+    if( (lastRotateAxis == 'x' && abs(speed_y) > 5) ||
+            (lastRotateAxis == 'y' && abs(speed_x)> 5) ||
             (lastRotateAxis == 'z' && abs(speed_x) > 5))
     {
        cout <<lastRotateAxis<< " axis" <<endl;
@@ -432,6 +433,7 @@ void Viewer::setShiftState(bool state)
 void Viewer::resetWorld()
 {
     mTransformMatrix.setToIdentity();
+    autoRotate = false;
 
 }
 
