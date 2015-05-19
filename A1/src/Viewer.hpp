@@ -60,9 +60,6 @@ protected:
     // Called when the mouse moves
     virtual void mouseMoveEvent ( QMouseEvent * event );
 
-    int buttonPressed;
-    int gameSpeed=3;
-
 private:
 
     QMatrix4x4 getCameraMatrix();
@@ -86,6 +83,9 @@ private:
     int mMvpMatrixLocation;
     int colorLocation;
 
+    int buttonPressed;
+    int gameSpeed=3;
+    bool multMode = false;
     int drawMode = GL_TRIANGLES;
 
     QMatrix4x4 mPerspMatrix;
@@ -100,6 +100,10 @@ private:
 
     int prev_x =-1;
     int prev_y = -1;
+    QColor colorList[12]  = {Qt::red, Qt::green ,Qt::blue,
+                             Qt::magenta,Qt::yellow,Qt::darkGray,
+                             Qt::cyan,Qt::white,Qt::darkRed,
+                            Qt::darkBlue,Qt::darkGreen,Qt::darkYellow};
 
     bool shiftState = false;
     float worldScale = 1;

@@ -141,7 +141,7 @@ void AppWindow::face(){
 }
 
 void AppWindow::multi_coloured(){
-    m_viewer->setFaceMode();
+    m_viewer->setMultiMode();
 }
 
 void AppWindow::moveRight()

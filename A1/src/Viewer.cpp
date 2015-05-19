@@ -368,8 +368,16 @@ void Viewer::drawCubeAt(int x, int y, QColor color){
     //draw shape
     for (int i = 0; i < 12; i++) {
         mProgram.setUniformValue(mMvpMatrixLocation, getCameraMatrix() * mModelMatrices[i]);
-        mProgram.setUniformValue(colorLocation, color);
+
         glEnable(GL_DEPTH_TEST);
+        if(multMode && color != Qt::black){
+            cout<<"setting color multi"<<endl;
+            if(i%2==0){
+                mProgram.setUniformValue(colorLocation,colorList[i]);
+            }
+        } else{
+            mProgram.setUniformValue(colorLocation, color);
+        }
         glDrawArrays(drawMode, 0, 3);
     }
 
@@ -421,10 +429,11 @@ void Viewer::trackSpeed()
 
 void Viewer::setFaceMode(){
     drawMode = GL_TRIANGLES;
+    multMode = false;
 }
 
 void Viewer::setMultiMode(){
-
+    multMode = true;
 }
 
 void Viewer::setShiftState(bool state)
