@@ -29,9 +29,11 @@ private:
     // Each menu itself
     QMenu* m_menu_app;
     QMenu* m_menu_draw;
+    QMenu* m_menu_speed;
 
     vector<QAction*> m_menu_actions;
     vector<QAction*> m_draw_actions;
+    vector<QAction*> m_speed_actions;
     Viewer* m_viewer;
 
     void moveRight();
@@ -48,6 +50,9 @@ private slots:
     void wire_frame();
     void face();
     void multi_coloured();
+    void slowSpeed();
+    void normalSpeed();
+    void fastSpeed();
 
 
 };

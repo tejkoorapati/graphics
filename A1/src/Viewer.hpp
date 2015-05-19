@@ -32,13 +32,14 @@ public:
     // If you want to render a new frame, call do not call paintGL(),
     // instead, call update() to ensure that the view gets a paint 
     // event.
-    void increaseGameSpeed();
-    void decreaseGameSpeed();
     void setWireMode();
     void setFaceMode();
     void setMultiMode();
     void setShiftState(bool state);
     void resetWorld();
+    void fastGameSpeed();
+    void slowGameSpeed();
+    void normalGameSpeed();
 public slots:
     void gameTick();
     void trackSpeed();

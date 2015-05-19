@@ -107,17 +107,52 @@ void AppWindow::createActions() {
 
 
 
+    QAction* slowSpeedAct = new QAction(tr("&Slow"), this);
+    m_speed_actions.push_back(slowSpeedAct);
+    slowSpeedAct->setCheckable(true);
+    slowSpeedAct->setShortcut(QKeySequence(tr("1")));
+    connect(slowSpeedAct, SIGNAL(triggered()), this, SLOT(slowSpeed()));
+
+    QAction* normalSpeedAct = new QAction(tr("&Medium"), this);
+    m_speed_actions.push_back(normalSpeedAct);
+    normalSpeedAct->setCheckable(true);
+    normalSpeedAct->setShortcut(QKeySequence(tr("2")));
+    connect(normalSpeedAct, SIGNAL(triggered()), this, SLOT(normalSpeed()));
+
+    QAction* fastSpeedAct = new QAction(tr("&Fast"), this);
+    m_speed_actions.push_back(fastSpeedAct);
+    fastSpeedAct->setChecked(true);
+    fastSpeedAct->setCheckable(true);
+    fastSpeedAct->setShortcut(QKeySequence(tr("3")));
+    connect(fastSpeedAct, SIGNAL(triggered()), this, SLOT(fastSpeed()));
+
+
+    QActionGroup* speedGroup = new QActionGroup(this);
+    drawGroup->setExclusive(true);
+    drawGroup->addAction(slowSpeedAct);
+    drawGroup->addAction(normalSpeedAct);
+    drawGroup->addAction(fastSpeedAct);
+
+
+
+
+
 }
 
 void AppWindow::createMenu() {
     m_menu_app = menuBar()->addMenu(tr("&Application"));
     m_menu_draw = menuBar()->addMenu(tr("&Draw Mode"));
+    m_menu_speed = menuBar()->addMenu(tr("&Speed"));
 
     for (auto& action : m_menu_actions) {
         m_menu_app->addAction(action);
     }
     for (auto& action : m_draw_actions) {
         m_menu_draw->addAction(action);
+    }
+
+    for (auto& action : m_speed_actions) {
+        m_menu_speed->addAction(action);
     }
 
 
@@ -142,6 +177,21 @@ void AppWindow::face(){
 
 void AppWindow::multi_coloured(){
     m_viewer->setMultiMode();
+}
+
+void AppWindow::slowSpeed()
+{
+    m_viewer->slowGameSpeed();
+}
+
+void AppWindow::normalSpeed()
+{
+    m_viewer->normalGameSpeed();
+}
+
+void AppWindow::fastSpeed()
+{
+    m_viewer->fastGameSpeed();
 }
 
 void AppWindow::moveRight()

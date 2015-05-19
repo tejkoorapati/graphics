@@ -390,18 +390,6 @@ void Viewer::makeWell()
     drawCubeAt(x,y,Qt::black);
 }
 
-void Viewer::decreaseGameSpeed(){
-    if (gameSpeed > 1) {
-        gameSpeed--;
-    }
-}
-
-
-void Viewer::increaseGameSpeed(){
-    if (gameSpeed < 10){
-        gameSpeed++;
-    }
-}
 
 void Viewer::gameTick(){
     m_game->tick();
@@ -436,6 +424,26 @@ void Viewer::resetWorld()
     autoRotate = false;
 
 }
+
+void Viewer::fastGameSpeed()
+{
+    gameSpeed = 10;
+    gameTimer->setInterval( (5000 - (80 * gameSpeed * 5 ) )/ 30);
+}
+
+void Viewer::slowGameSpeed()
+{
+    gameSpeed = 1;
+    gameTimer->setInterval( (5000 - (80 * gameSpeed * 5 ) )/ 30);
+}
+
+void Viewer::normalGameSpeed()
+{
+    gameSpeed = 5;
+    gameTimer->setInterval( (5000 - (80 * gameSpeed * 5 ) )/ 30);
+}
+
+
 
 void Viewer::setWireMode(){
     drawMode = GL_LINE_LOOP;
