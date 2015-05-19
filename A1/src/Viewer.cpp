@@ -153,6 +153,8 @@ void Viewer::paintGL() {
     }
 
     if(autoRotate){
+       // cout<<"auto rotate on"<<endl;
+       // cout<<"axis "<<lastRotateAxis<<endl;
         if(lastRotateAxis == 'x'){
             rotateWorld(5*rotateSign,1,0,0);
         }
@@ -186,16 +188,16 @@ void Viewer::mousePressEvent ( QMouseEvent * event ) {
     prev_y = event->y();
     xBeforeTick = event->x();
     yBeforeTick = event->y();
-    rotateTimer->start(200);
+    rotateTimer->start(100);
 }
 
 void Viewer::mouseReleaseEvent ( QMouseEvent * event ) {
     //std::cerr << "Stub: button " << event->button() << " released\n";
     rotateTimer->stop();
     trackSpeed();
-    if( (lastRotateAxis == 'x' && speed_x > 0) ||
-            (lastRotateAxis == 'y' && speed_y > 0) ||
-            (lastRotateAxis == 'z' && speed_x > 0))
+    if( (lastRotateAxis == 'x' && abs(speed_x) > 5) ||
+            (lastRotateAxis == 'y' && abs(speed_y)> 5) ||
+            (lastRotateAxis == 'z' && abs(speed_x) > 5))
     {
        cout <<lastRotateAxis<< " axis" <<endl;
        cout <<"with speed of " <<speed_x<<endl;
