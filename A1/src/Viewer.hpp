@@ -85,9 +85,9 @@ private:
     int colorLocation;
 
     int buttonPressed;
-    int gameSpeed=3;
-    bool multMode = false;
-    int drawMode = GL_TRIANGLES;
+    int gameSpeed;
+    bool multMode ;
+    int drawMode ;
 
     QMatrix4x4 mPerspMatrix;
     QMatrix4x4 mModelMatrices[12];
@@ -99,20 +99,17 @@ private:
 
     QGLShaderProgram mProgram;
 
-    int prev_x =-1;
-    int prev_y = -1;
-    QColor colorList[12]  = {Qt::red, Qt::green ,Qt::blue,
-                             Qt::magenta,Qt::yellow,Qt::darkGray,
-                             Qt::cyan,Qt::white,Qt::darkRed,
-                            Qt::darkBlue,Qt::darkGreen,Qt::darkYellow};
+    int prev_x;
+    int prev_y;
+    QColor colorList[12];
 
-    bool shiftState = false;
-    float worldScale = 1;
+    bool shiftState ;
+    float worldScale;
 
     bool autoRotate;
     int rotateSign;
-    int speed_x=0;
-    int speed_y=0;
+    int speed_x;
+    int speed_y;
     int xBeforeTick;
     int yBeforeTick;
     char lastRotateAxis;

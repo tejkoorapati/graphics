@@ -22,6 +22,18 @@ Viewer::Viewer(const QGLFormat& format, QWidget *parent)
     mTimer = new QTimer(this);
     connect(mTimer, SIGNAL(timeout()), this, SLOT(update()));
     mTimer->start(500/30);
+	gameSpeed = 5;
+	multMode = false;
+	drawMode = GL_TRIANGLES;
+	shiftState = false;
+	worldScale = 1;
+	QColor cList[12] = {Qt::red, Qt::green ,Qt::blue,
+                             Qt::magenta,Qt::yellow,Qt::darkGray,
+                             Qt::cyan,Qt::white,Qt::darkYellow,
+                            Qt::darkBlue,Qt::darkGreen,Qt::darkRed};
+	for(int i=0; i < 12; i++) {
+		colorList[i] = cList[i];
+	}
 
 
     m_game = new Game(10,20);
@@ -31,8 +43,6 @@ Viewer::Viewer(const QGLFormat& format, QWidget *parent)
     gameTimer->start( (5000 - (80 * gameSpeed * 5 ) )/ 30);
     rotateTimer = new QTimer(this);
     connect(rotateTimer,SIGNAL(timeout()),this,SLOT(trackSpeed()));
-
-
 }
 
 Viewer::~Viewer() {
@@ -196,7 +206,7 @@ void Viewer::mouseReleaseEvent ( QMouseEvent * event ) {
     rotateTimer->stop();
     trackSpeed();
     cout<<"speed x: "<<speed_x <<", speed y: "<<speed_y<<endl;
-    if( (lastRotateAxis == 'x' && abs(speed_y) > 5) ||
+    if( (lastRotateAxis == 'x' && abs(speed_x) > 5) ||
             (lastRotateAxis == 'y' && abs(speed_x)> 5) ||
             (lastRotateAxis == 'z' && abs(speed_x) > 5))
     {
@@ -219,21 +229,17 @@ void Viewer::mouseMoveEvent ( QMouseEvent * event ) {
     if(shiftState){
         if(signx == 1){
             if(diffx > 0){
-                worldScale += 0.01;
                 worldScale = 1.05;
             }
             else{
-                worldScale -= 0.01;
                 worldScale = 0.95;
             }
         }
         else{
             if(diffx < 0){
-                worldScale -= 0.01;
                 worldScale = 0.95;
             }
             else{
-                worldScale += 0.01;
                 worldScale = 1.05;
             }
         }
@@ -246,9 +252,9 @@ void Viewer::mouseMoveEvent ( QMouseEvent * event ) {
     }
 
     if(buttonPressed == 1){
-        rotateWorld(signy*abs(diffy)*.5,1,0,0);
+        rotateWorld(signx*abs(diffx)*.5,1,0,0);
         lastRotateAxis = 'x';
-        rotateSign = signy;
+        rotateSign = signx;
     }
     else if (buttonPressed == 2){
         rotateWorld(signx*abs(diffx)*.5,0,1,0);
@@ -404,12 +410,20 @@ void Viewer::trackSpeed()
 
 }
 
+
+void Viewer::setWireMode(){
+    setFaceMode();
+    drawMode = GL_LINE_LOOP;
+
+}
+
 void Viewer::setFaceMode(){
     drawMode = GL_TRIANGLES;
     multMode = false;
 }
 
 void Viewer::setMultiMode(){
+    setFaceMode();
     multMode = true;
 }
 
@@ -445,8 +459,3 @@ void Viewer::normalGameSpeed()
 
 
 
-void Viewer::setWireMode(){
-    drawMode = GL_LINE_LOOP;
-
-
-}

@@ -79,7 +79,6 @@ void AppWindow::createActions() {
 
     QAction* wireAct = new QAction(tr("&Wire-frame"), this);
     m_draw_actions.push_back(wireAct);
-    wireAct->setChecked(true);
     wireAct->setCheckable(true);
     wireAct->setShortcut(QKeySequence(tr("W")));
     connect(wireAct, SIGNAL(triggered()), this, SLOT(wire_frame()));
@@ -105,6 +104,7 @@ void AppWindow::createActions() {
     drawGroup->addAction(faceAct);
     drawGroup->addAction(multiAct);
 
+    faceAct->setChecked(true);
 
 
     QAction* slowSpeedAct = new QAction(tr("&Slow"), this);
@@ -121,18 +121,18 @@ void AppWindow::createActions() {
 
     QAction* fastSpeedAct = new QAction(tr("&Fast"), this);
     m_speed_actions.push_back(fastSpeedAct);
-    fastSpeedAct->setChecked(true);
     fastSpeedAct->setCheckable(true);
     fastSpeedAct->setShortcut(QKeySequence(tr("3")));
     connect(fastSpeedAct, SIGNAL(triggered()), this, SLOT(fastSpeed()));
 
 
     QActionGroup* speedGroup = new QActionGroup(this);
-    drawGroup->setExclusive(true);
-    drawGroup->addAction(slowSpeedAct);
-    drawGroup->addAction(normalSpeedAct);
-    drawGroup->addAction(fastSpeedAct);
+    speedGroup->setExclusive(true);
+    speedGroup->addAction(slowSpeedAct);
+    speedGroup->addAction(normalSpeedAct);
+    speedGroup->addAction(fastSpeedAct);
 
+    normalSpeedAct->setChecked(true);
 
 
 
