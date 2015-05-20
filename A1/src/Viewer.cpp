@@ -205,14 +205,14 @@ void Viewer::mouseReleaseEvent ( QMouseEvent * event ) {
     //std::cerr << "Stub: button " << event->button() << " released\n";
     rotateTimer->stop();
     trackSpeed();
-    cout<<"speed x: "<<speed_x <<", speed y: "<<speed_y<<endl;
+    // cout<<"speed x: "<<speed_x <<", speed y: "<<speed_y<<endl;
     if( (lastRotateAxis == 'x' && abs(speed_x) > 5) ||
             (lastRotateAxis == 'y' && abs(speed_x)> 5) ||
             (lastRotateAxis == 'z' && abs(speed_x) > 5))
     {
-       cout <<lastRotateAxis<< " axis" <<endl;
-       cout <<"with speed of " <<speed_x<<endl;
-       cout <<"direction of " << rotateSign <<endl;
+       // cout <<lastRotateAxis<< " axis" <<endl;
+       // cout <<"with speed of " <<speed_x<<endl;
+       // cout <<"direction of " << rotateSign <<endl;
         autoRotate = true;
     }
 
@@ -221,9 +221,7 @@ void Viewer::mouseReleaseEvent ( QMouseEvent * event ) {
 void Viewer::mouseMoveEvent ( QMouseEvent * event ) {
     //std::cerr << "Stub: Motion at " << event->x() << ", " << event->y() << ", Button: " << buttonPressed << std::endl;
     int diffx = event->x() - prev_x;
-    int diffy = event->y() - prev_y;
     int signx = (event->x() > prev_x) ? 1 : -1;
-    int signy = (event->y() > prev_y) ? 1 : -1;
     //cout<<"diffx : "<< diffx <<endl;
 
     if(shiftState){
@@ -256,12 +254,12 @@ void Viewer::mouseMoveEvent ( QMouseEvent * event ) {
         lastRotateAxis = 'x';
         rotateSign = signx;
     }
-    else if (buttonPressed == 2){
+    else if (buttonPressed == 4){
         rotateWorld(signx*abs(diffx)*.5,0,1,0);
         lastRotateAxis = 'y';
         rotateSign = signx;
     }
-    else if (buttonPressed == 4){
+    else if (buttonPressed == 2){
         rotateWorld(signx*abs(diffx)*.5 ,0,0,1);
         lastRotateAxis = 'z';
         rotateSign = signx;
