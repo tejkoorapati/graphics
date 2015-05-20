@@ -38,8 +38,25 @@ void AppWindow::keyPressEvent(QKeyEvent *event) {
         dropPiece();
     } else if (event->key() == Qt::Key_Shift) {
        shiftPressed();
-       cout<<"Shift pressed"<<endl;
-    } else {
+    } else if (event->key() == Qt::Key_1) {
+        slowSpeed();
+    }else if (event->key() == Qt::Key_2) {
+        normalSpeed();
+    }else if (event->key() == Qt::Key_3) {
+        fastSpeed();
+    }else if (event->key() == Qt::Key_W) {
+        wire_frame();
+    }else if (event->key() == Qt::Key_F) {
+        face();
+    }else if (event->key() == Qt::Key_M) {
+        multi_coloured();
+    }else if (event->key() == Qt::Key_N) {
+        new_game();
+    }else if (event->key() == Qt::Key_R) {
+        reset();
+    }else if (event->key() == Qt::Key_Q) {
+        close();
+    }else {
         QWidget::keyPressEvent(event);
     }
 }
@@ -48,7 +65,6 @@ void AppWindow::keyReleaseEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Shift) {
            shiftReleased();
-           cout<<"Shift released"<<endl;
         }
 }
 
@@ -69,32 +85,27 @@ void AppWindow::createActions() {
 
     QAction* newGameAct = new QAction(tr("&New Game"), this);
     m_menu_actions.push_back(newGameAct);
-    newGameAct->setShortcut(QKeySequence(tr("N")));
     connect(newGameAct, SIGNAL(triggered()), this, SLOT(new_game()));
 
     QAction* resetAct = new QAction(tr("&Reset"), this);
     m_menu_actions.push_back(resetAct);
-    resetAct->setShortcut(QKeySequence(tr("R")));
     connect(resetAct, SIGNAL(triggered()), this, SLOT(reset()));
 
     QAction* wireAct = new QAction(tr("&Wire-frame"), this);
     m_draw_actions.push_back(wireAct);
     wireAct->setCheckable(true);
-    wireAct->setShortcut(QKeySequence(tr("W")));
     connect(wireAct, SIGNAL(triggered()), this, SLOT(wire_frame()));
 
 
     QAction* faceAct = new QAction(tr("&Face"), this);
     m_draw_actions.push_back(faceAct);
     faceAct->setCheckable(true);
-    faceAct->setShortcut(QKeySequence(tr("F")));
     connect(faceAct, SIGNAL(triggered()), this, SLOT(face()));
 
 
     QAction* multiAct = new QAction(tr("&Multicoloured"), this);
     m_draw_actions.push_back(multiAct);
     multiAct->setCheckable(true);
-    multiAct->setShortcut(QKeySequence(tr("M")));
     connect(multiAct, SIGNAL(triggered()), this, SLOT(multi_coloured()));
 
     QActionGroup* drawGroup = new QActionGroup(this);
@@ -110,23 +121,20 @@ void AppWindow::createActions() {
     QAction* slowSpeedAct = new QAction(tr("&Slow"), this);
     m_speed_actions.push_back(slowSpeedAct);
     slowSpeedAct->setCheckable(true);
-    slowSpeedAct->setShortcut(QKeySequence(tr("1")));
     connect(slowSpeedAct, SIGNAL(triggered()), this, SLOT(slowSpeed()));
 
     QAction* normalSpeedAct = new QAction(tr("&Medium"), this);
     m_speed_actions.push_back(normalSpeedAct);
     normalSpeedAct->setCheckable(true);
-    normalSpeedAct->setShortcut(QKeySequence(tr("2")));
     connect(normalSpeedAct, SIGNAL(triggered()), this, SLOT(normalSpeed()));
 
     QAction* fastSpeedAct = new QAction(tr("&Fast"), this);
     m_speed_actions.push_back(fastSpeedAct);
     fastSpeedAct->setCheckable(true);
-    fastSpeedAct->setShortcut(QKeySequence(tr("3")));
     connect(fastSpeedAct, SIGNAL(triggered()), this, SLOT(fastSpeed()));
 
-
     QActionGroup* speedGroup = new QActionGroup(this);
+
     speedGroup->setExclusive(true);
     speedGroup->addAction(slowSpeedAct);
     speedGroup->addAction(normalSpeedAct);
