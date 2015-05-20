@@ -31,6 +31,17 @@ private:
     QMenu* m_menu_draw;
     QMenu* m_menu_speed;
 
+    QAction* quitAct;
+    QAction* newGameAct;
+    QAction* resetAct;
+    QAction* wireAct;
+    QAction* faceAct;
+    QAction* multiAct;
+    QAction* slowSpeedAct;
+    QAction* normalSpeedAct;
+    QAction* fastSpeedAct;
+    
+
     vector<QAction*> m_menu_actions;
     vector<QAction*> m_draw_actions;
     vector<QAction*> m_speed_actions;

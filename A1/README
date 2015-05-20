@@ -1,0 +1,24 @@
+Name: Srushti Koorapati
+Student Number: 20389553 
+User-id: skoorapa
+Assignment: 1
+
+The final executable was compiled on this machine: gl08
+
+How to invoke my program: ./game488
+
+
+How to use my extra features: There are no extra features in this game. The basic functionality outlined in the assignment were followed.
+
+
+I have created the following data files, which are in the data directory: There are no data files.
+
+
+My program assumes the following: 
+- Wired mode should display the colors for the face mode.
+- New game does not change the view in anyway. The game is simply restarted.
+- Reset view stops any persistence rotation.
+- Mouse movements based rotations/scaling are not scaled on acceleration.
+- When a game is over you may still do all view contorls, view menu options and control the speed (incase you want it for the next game).
+- Persistence does not scale on speed of the mouse before release. If the speed passes a threshold, it will auto rotate at a constant speed in all cases.
+- Game starts in face mode with medium speed.

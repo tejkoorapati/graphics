@@ -396,7 +396,7 @@ void Viewer::makeWell()
 
 
 void Viewer::gameTick(){
-    m_game->tick();
+    gameStatus = m_game->tick();
 }
 
 void Viewer::trackSpeed()

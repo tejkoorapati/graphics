@@ -28,6 +28,7 @@ public:
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
     Game* m_game;
+    int gameStatus;
 
     // If you want to render a new frame, call do not call paintGL(),
     // instead, call update() to ensure that the view gets a paint 
@@ -113,6 +114,7 @@ private:
     int xBeforeTick;
     int yBeforeTick;
     char lastRotateAxis;
+
 
 };
 

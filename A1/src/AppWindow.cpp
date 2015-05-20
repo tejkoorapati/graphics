@@ -24,32 +24,46 @@ AppWindow::AppWindow() {
 }
 
 void AppWindow::keyPressEvent(QKeyEvent *event) {
-    if (event->key() == Qt::Key_Escape) {
-        QCoreApplication::instance()->quit();
-    } else if (event->key() == Qt::Key_Right) {
-        moveRight();
-    } else if (event->key() == Qt::Key_Left) {
-        moveLeft();
-    } else if (event->key() == Qt::Key_Down) {
-        rotateCW();
-    } else if (event->key() == Qt::Key_Up) {
-        rotateCCW();
-    } else if (event->key() == Qt::Key_Space) {
-        dropPiece();
-    } else if (event->key() == Qt::Key_Shift) {
-       shiftPressed();
-    } else if (event->key() == Qt::Key_1) {
+    
+    if(m_viewer->gameStatus>=0){
+        if (event->key() == Qt::Key_Escape) {
+            QCoreApplication::instance()->quit();
+        } else if (event->key() == Qt::Key_Right) {
+            moveRight();
+        } else if (event->key() == Qt::Key_Left) {
+            moveLeft();
+        } else if (event->key() == Qt::Key_Down) {
+            rotateCW();
+        } else if (event->key() == Qt::Key_Up) {
+            rotateCCW();
+        } else if (event->key() == Qt::Key_Space) {
+            dropPiece();
+        } else if (event->key() == Qt::Key_Shift) {
+           shiftPressed();
+        }
+    }
+
+
+
+
+    if (event->key() == Qt::Key_1) {
         slowSpeed();
+        slowSpeedAct->setChecked(true);
     }else if (event->key() == Qt::Key_2) {
         normalSpeed();
+        normalSpeedAct->setChecked(true);
     }else if (event->key() == Qt::Key_3) {
         fastSpeed();
+        fastSpeedAct->setChecked(true);
     }else if (event->key() == Qt::Key_W) {
         wire_frame();
+        wireAct->setChecked(true);
     }else if (event->key() == Qt::Key_F) {
         face();
+        faceAct->setChecked(true);
     }else if (event->key() == Qt::Key_M) {
         multi_coloured();
+        multiAct->setChecked(true);
     }else if (event->key() == Qt::Key_N) {
         new_game();
     }else if (event->key() == Qt::Key_R) {
@@ -70,7 +84,7 @@ void AppWindow::keyReleaseEvent(QKeyEvent *event)
 
 void AppWindow::createActions() {
     // Creates a new action for quiting and pushes it onto the menu actions vector
-    QAction* quitAct = new QAction(tr("&Quit"), this);
+    quitAct = new QAction(tr("&Quit"), this);
     m_menu_actions.push_back(quitAct);
 
     // We set the accelerator keys
@@ -83,27 +97,27 @@ void AppWindow::createActions() {
     // Connect the action with the signal and slot designated
     connect(quitAct, SIGNAL(triggered()), this, SLOT(close()));
 
-    QAction* newGameAct = new QAction(tr("&New Game"), this);
+    newGameAct = new QAction(tr("&New Game (N)"), this);
     m_menu_actions.push_back(newGameAct);
     connect(newGameAct, SIGNAL(triggered()), this, SLOT(new_game()));
 
-    QAction* resetAct = new QAction(tr("&Reset"), this);
+    resetAct = new QAction(tr("&Reset (R)"), this);
     m_menu_actions.push_back(resetAct);
     connect(resetAct, SIGNAL(triggered()), this, SLOT(reset()));
 
-    QAction* wireAct = new QAction(tr("&Wire-frame"), this);
+    wireAct = new QAction(tr("&Wire-frame (W)"), this);
     m_draw_actions.push_back(wireAct);
     wireAct->setCheckable(true);
     connect(wireAct, SIGNAL(triggered()), this, SLOT(wire_frame()));
 
 
-    QAction* faceAct = new QAction(tr("&Face"), this);
+    faceAct = new QAction(tr("&Face (F)"), this);
     m_draw_actions.push_back(faceAct);
     faceAct->setCheckable(true);
     connect(faceAct, SIGNAL(triggered()), this, SLOT(face()));
 
 
-    QAction* multiAct = new QAction(tr("&Multicoloured"), this);
+    multiAct = new QAction(tr("&Multicoloured (M)"), this);
     m_draw_actions.push_back(multiAct);
     multiAct->setCheckable(true);
     connect(multiAct, SIGNAL(triggered()), this, SLOT(multi_coloured()));
@@ -118,17 +132,17 @@ void AppWindow::createActions() {
     faceAct->setChecked(true);
 
 
-    QAction* slowSpeedAct = new QAction(tr("&Slow"), this);
+    slowSpeedAct = new QAction(tr("&Slow (1)"), this);
     m_speed_actions.push_back(slowSpeedAct);
     slowSpeedAct->setCheckable(true);
     connect(slowSpeedAct, SIGNAL(triggered()), this, SLOT(slowSpeed()));
 
-    QAction* normalSpeedAct = new QAction(tr("&Medium"), this);
+    normalSpeedAct = new QAction(tr("&Medium (2)"), this);
     m_speed_actions.push_back(normalSpeedAct);
     normalSpeedAct->setCheckable(true);
     connect(normalSpeedAct, SIGNAL(triggered()), this, SLOT(normalSpeed()));
 
-    QAction* fastSpeedAct = new QAction(tr("&Fast"), this);
+    fastSpeedAct = new QAction(tr("&Fast (3)"), this);
     m_speed_actions.push_back(fastSpeedAct);
     fastSpeedAct->setCheckable(true);
     connect(fastSpeedAct, SIGNAL(triggered()), this, SLOT(fastSpeed()));
