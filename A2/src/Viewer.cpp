@@ -40,7 +40,17 @@ QSize Viewer::sizeHint() const {
 void Viewer::set_perspective(double fov, double aspect,
                              double near, double far)
 {
-    // Fill me in!
+    double a,c,cotOfFOV ;
+
+    cotOfFOV = 1/tan(3.14159 * fov / 360);
+    a =  (far+near)/(far-near);
+    c = (-2 *far*near)/(far-near);
+
+    m_projection = QMatrix4x4(cotOfFOV/aspect,0,0,0,
+                              0,cotOfFOV,0,0,
+                              0,0,a,c,
+                              0,0,1,0);
+
 }
 
 void Viewer::reset_view()

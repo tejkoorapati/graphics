@@ -5,6 +5,7 @@
 #include <QGLShaderProgram>
 #include <QMatrix4x4>
 #include <QtGlobal>
+#include <math.h>
 // #include "algebra.hpp"
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 1, 0))
