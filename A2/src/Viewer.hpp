@@ -6,7 +6,7 @@
 #include <QMatrix4x4>
 #include <QtGlobal>
 #include <math.h>
-// #include "algebra.hpp"
+#include "algebra.hpp"
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 1, 0))
 #include <QOpenGLBuffer>
@@ -35,7 +35,7 @@ public:
     // Set the parameters of the current perspective projection using
     // the semantics of gluPerspective().
     void set_perspective(double fov, double aspect,
-                         double near, double far);
+                         double near_p, double far_p);
 
     // Restore all the transforms and perspective parameters to their
     // original state. Set the viewport to its initial size.
@@ -78,9 +78,23 @@ private:
 
     int mColorLocation;
     
-    // *** Fill me in ***
-    // You will want to declare some more matrices here
-    QMatrix4x4 m_projection;    
+
+    Matrix4x4 m_projection;
+    Matrix4x4 m_view;
+    Matrix4x4 m_Model;
+    double m_fov;
+    double m_near;
+    double m_far;
+
+    Point3D m_cubeOriginal[8];
+    Point3D m_cubeFinal[8];
+
+    void initGModel();
+    void initCube();
+    void drawCube();
+    Point2D normalize(Point3D point);
+    Point3D project(Point3D point);
+    void draw3dLine(Point3D start, Point3D end);
 };
 
 #endif
