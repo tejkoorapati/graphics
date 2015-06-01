@@ -15,6 +15,9 @@ class AppWindow : public QMainWindow
 public:
     AppWindow();
 
+protected:
+    void keyPressEvent(QKeyEvent *event);
+
 private:
     void createActions();
     void createMenu();

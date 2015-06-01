@@ -23,11 +23,12 @@ public:
     Viewer(const QGLFormat& format, QWidget *parent = 0);
     virtual ~Viewer();
     
+    enum Axis {X,Y,Z};
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
-
+    int interactionMode;
     // If you want to render a new frame, call do not call paintGL(),
-    // instead, call update() to ensure that the view gets a paint 
+    // instead, call update() to ensure that the view gets a paint
     // event.
 
     // *** Fill in these functions (in viewer.cpp) ***
@@ -55,7 +56,7 @@ protected:
     virtual void mouseReleaseEvent ( QMouseEvent * event );
     // Called when the mouse moves
     virtual void mouseMoveEvent ( QMouseEvent * event );
- 
+
     // Draw a line -- call draw_init first!
     void draw_line(const QVector2D& p1, const QVector2D& p2) ;
 
@@ -82,19 +83,39 @@ private:
     Matrix4x4 m_projection;
     Matrix4x4 m_view;
     Matrix4x4 m_Model;
+    Matrix4x4 m_scale;
     double m_fov;
     double m_near;
     double m_far;
 
-    Point3D m_cubeOriginal[8];
+    int prev_x;
+    int prev_y;
+
+    Point3D m_cubePoints[8];
     Point3D m_cubeFinal[8];
 
-    void initGModel();
+    Point3D m_cubeAxisPoints[4];
+    Point3D m_cubeAxisFinal[4];
+
+    Point3D m_worldAxisPoints[4];
+    Point3D m_worldAxisFinal[4];
+
+
+    bool leftPressed;
+    bool middlePressed;
+    bool rightPressed;
+    void initAxis();
+    void drawAxis();
     void initCube();
     void drawCube();
     Point2D normalize(Point3D point);
     Point3D project(Point3D point);
     void draw3dLine(Point3D start, Point3D end);
+
+    void rotate(Matrix4x4 &mat, double angle, Axis axis);
+    void translate(Matrix4x4 &mat, double x, double y, double z);
+    void scale(Matrix4x4 &mat, double x, double y, double z);
+
 };
 
 #endif
