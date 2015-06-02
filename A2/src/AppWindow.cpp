@@ -59,7 +59,10 @@ void AppWindow::keyPressEvent(QKeyEvent *event) {
         m_viewer->interactionMode = 4;
     } else if (event->key() == Qt::Key_S) {
         m_viewer->interactionMode = 5;
+    } else if (event->key() == Qt::Key_A) {
+        m_viewer->reset_view();
     }
+
 
 
 }

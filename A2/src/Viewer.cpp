@@ -42,7 +42,8 @@ void Viewer::set_perspective(double fov, double aspect,
 {
     double a,c,cotOfFOV ;
 
-    cotOfFOV = 1/tan(3.14159 * fov / 360);
+    fov = fov *(2 * 3.14159 / 360.0);
+    cotOfFOV = 1/tan(fov/2);
     a =  (far_p+near_p)/(far_p-near_p);
     c = (-2 *far_p*near_p)/(far_p-near_p);
 
@@ -71,12 +72,13 @@ void Viewer::reset_view()
     m_view = Matrix4x4(r1,r2,r3,r4);
 
     m_fov = 30;
-    m_near = 0;
+    m_near = 1;
     m_far = 20;
 
     set_perspective( m_fov, 1, m_near, m_far );
     initAxis();
     initCube();
+    update();
 
 
 
@@ -88,24 +90,24 @@ void Viewer::initializeGL() {
     // Do some OpenGL setup
     QGLFormat glFormat = QGLWidget::format();
     if (!glFormat.sampleBuffers()) {
-        std::cerr << "Could not enable sample buffers." << std::endl;
+        // std::cerr << "Could not enable sample buffers." << std::endl;
         return;
     }
 
     glClearColor(0.7, 0.7, 0.7, 0.0);
     
     if (!mProgram.addShaderFromSourceFile(QGLShader::Vertex, "shader.vert")) {
-        std::cerr << "Cannot load vertex shader." << std::endl;
+        // std::cerr << "Cannot load vertex shader." << std::endl;
         return;
     }
 
     if (!mProgram.addShaderFromSourceFile(QGLShader::Fragment, "shader.frag")) {
-        std::cerr << "Cannot load fragment shader." << std::endl;
+        // std::cerr << "Cannot load fragment shader." << std::endl;
         return;
     }
 
     if ( !mProgram.link() ) {
-        std::cerr << "Cannot link shaders." << std::endl;
+        // std::cerr << "Cannot link shaders." << std::endl;
         return;
     }
 
@@ -141,7 +143,7 @@ void Viewer::initializeGL() {
 #endif
 
     if (!mVertexBufferObject.bind()) {
-        std::cerr << "could not bind vertex buffer to the context." << std::endl;
+        // std::cerr << "could not bind vertex buffer to the context." << std::endl;
         return;
     }
 
@@ -160,7 +162,7 @@ void Viewer::paintGL() {
 }
 
 void Viewer::mousePressEvent ( QMouseEvent * event ) {
-    std::cerr << "Stub: button " << event->button() << " pressed\n";
+    // std::cerr << "Stub: button " << event->button() << " pressed\n";
 
     prev_x = event->x();
     prev_y = event->y();
@@ -179,7 +181,7 @@ void Viewer::mousePressEvent ( QMouseEvent * event ) {
 }
 
 void Viewer::mouseReleaseEvent ( QMouseEvent * event ) {
-    std::cerr << "Stub: button " << event->button() << " released\n";
+    // std::cerr << "Stub: button " << event->button() << " released\n";
     switch(event->button()){
     case 1 :
         leftPressed = false;
@@ -194,7 +196,7 @@ void Viewer::mouseReleaseEvent ( QMouseEvent * event ) {
 }
 
 void Viewer::mouseMoveEvent ( QMouseEvent * event ) {
-    std::cerr << "Stub: Motion at " << event->x() << ", " << event->y() << std::endl;
+    // std::cerr << "Stub: Motion at " << event->x() << ", " << event->y() << std::endl;
 
     int diffx = event->x() - prev_x;
     int signx = (event->x() > prev_x) ? 1 : -1;
@@ -230,8 +232,15 @@ void Viewer::mouseMoveEvent ( QMouseEvent * event ) {
         break;
 
     case 2:
-        if(leftPressed)
+        if(leftPressed){
+            if (signx < 0 && m_fov <= 5){
+                return;
+            }
+            else if (signx > 0 && m_fov >= 160){
+                return;
+            }
             m_fov += signx*0.1;
+        }
         if(middlePressed)
             m_near += signx*1;
         if(rightPressed)
@@ -292,12 +301,50 @@ Point3D Viewer::project(Point3D point)
 
 Point2D Viewer::normalize(Point3D point)
 {
-    return Point2D(point[0]/point[2],point[1]/point[2]);
+//    return Point2D(point[0]/point[2],point[1]/point[2]);
+    return Point2D(point[0],point[1]);;
 
 }
 
+//void
+
 void Viewer::draw3dLine(Point3D start, Point3D end)
 {
+
+    double edge = m_near;
+    Vector3D normal = Vector3D(0.0, 0.0, 1);
+    for(int i = 0; i < 2; i++){
+        double startToPlane = (start - Point3D(0.0, 0.0, edge)).dot(normal);
+        double endToPlane = (end - Point3D(0.0, 0.0, edge)).dot(normal);
+
+        if(startToPlane < 0 && endToPlane < 0)
+            return;
+
+        if(startToPlane > 0 && endToPlane > 0){
+            edge = m_far;
+            normal = Vector3D(0.0, 0.0, -1);
+//            cout<<"all inside"<<endl;
+            continue;
+        }
+
+        double t = startToPlane / (startToPlane - endToPlane);
+
+        if(startToPlane < 0){
+            cout<<"start outside"<<endl;
+            start = start + t * (end - start);
+        }
+        else{
+            cout<<"end outside"<<endl;
+            end = start + t * (end - start);
+        }
+        edge = m_far;
+        normal = Vector3D(0.0, 0.0, -1);
+
+    }
+
+
+
+
     Point2D startF = normalize(project(start));
     Point2D endF = normalize(project(end));
 
