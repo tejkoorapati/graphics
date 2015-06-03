@@ -60,6 +60,7 @@ void Viewer::set_perspective(double fov, double aspect,
 void Viewer::reset_view()
 {
 
+
     interactionMode = 0;
     //    m_projection = Matrix4x4();
     m_Model  = Matrix4x4();
@@ -71,14 +72,24 @@ void Viewer::reset_view()
     r4 = Vector4D( 0,   0,  0, 1 );
     m_view = Matrix4x4(r1,r2,r3,r4);
 
+
+
+
     m_fov = 30;
     m_near = 1;
     m_far = 20;
 
+    bottomLeftView = Point2D(-.95,-.95 );
+    bottomRightView = Point2D(.95,-.95);
+    topLeftView = Point2D(-.95,.95);
+    topRightView = Point2D(.95, .95);
+
+
+
     set_perspective( m_fov, 1, m_near, m_far );
     initAxis();
     initCube();
-    update();
+
 
 
 
@@ -153,12 +164,16 @@ void Viewer::initializeGL() {
     mProgram.setAttributeBuffer("vert", GL_FLOAT, 0, 3);
 
     mColorLocation = mProgram.uniformLocation("frag_color");
+    draw_init();
 }
 
-void Viewer::paintGL() {    
+void Viewer::paintGL() {
+
+
     draw_init();
     drawCube();
     drawAxis();
+    drawViewPortBorder();
 }
 
 void Viewer::mousePressEvent ( QMouseEvent * event ) {
@@ -166,6 +181,14 @@ void Viewer::mousePressEvent ( QMouseEvent * event ) {
 
     prev_x = event->x();
     prev_y = event->y();
+
+
+
+    if(viewPortMode){
+        mousePressX = event->x();
+        mousePressY = event->y();
+        return;
+    }
 
     switch(event->button()){
     case 1 :
@@ -182,6 +205,15 @@ void Viewer::mousePressEvent ( QMouseEvent * event ) {
 
 void Viewer::mouseReleaseEvent ( QMouseEvent * event ) {
     // std::cerr << "Stub: button " << event->button() << " released\n";
+    if(viewPortMode){
+        mouseReleaseX = event->x();
+        mouseReleaseY = event->y();
+        drawMouseTracking();
+        viewPortMode = false;
+        return;
+    }
+
+
     switch(event->button()){
     case 1 :
         leftPressed = false;
@@ -193,10 +225,18 @@ void Viewer::mouseReleaseEvent ( QMouseEvent * event ) {
         middlePressed = false;
         break;
     }
+
 }
 
 void Viewer::mouseMoveEvent ( QMouseEvent * event ) {
-    // std::cerr << "Stub: Motion at " << event->x() << ", " << event->y() << std::endl;
+    //std::cerr << "Stub: Motion at " << event->x() << ", " << event->y() << std::endl;
+
+    if(viewPortMode){
+        mouseReleaseX = event->x();
+        mouseReleaseY = event->y();
+        drawMouseTracking();
+        return;
+    }
 
     int diffx = event->x() - prev_x;
     int signx = (event->x() > prev_x) ? 1 : -1;
@@ -299,10 +339,19 @@ Point3D Viewer::project(Point3D point)
 
 }
 
-Point2D Viewer::normalize(Point3D point)
+Point3D Viewer::scaleToViewPort(Point3D point)
 {
-//    return Point2D(point[0]/point[2],point[1]/point[2]);
-    return Point2D(point[0],point[1]);;
+
+    //    return Point2D(point[0]+1 *(topRightView[0] - topLeftView[0])/2 + topLeftView[0],
+    //            point[1] + 1 * (bottomRightView[1]-topRightView[1])/2 + topRightView[1]);
+
+    double scaleFactorWidth = (bottomRightView[0] - bottomLeftView[0])/2;
+    double scaleFactorHeigth = (topRightView[1] - bottomRightView[1])/2;
+
+
+    return( Point3D( scaleFactorWidth * (point[0] + 1) + bottomLeftView[0],
+            scaleFactorHeigth * (point[1] + 1) + bottomLeftView[1],point[2]) );
+
 
 }
 
@@ -311,44 +360,110 @@ Point2D Viewer::normalize(Point3D point)
 void Viewer::draw3dLine(Point3D start, Point3D end)
 {
 
-    double edge = m_near;
-    Vector3D normal = Vector3D(0.0, 0.0, 1);
-    for(int i = 0; i < 2; i++){
-        double startToPlane = (start - Point3D(0.0, 0.0, edge)).dot(normal);
-        double endToPlane = (end - Point3D(0.0, 0.0, edge)).dot(normal);
+    //    double edge = m_near;
+    //    Vector3D normal = Vector3D(0.0, 0.0, 1);
+    //    for(int i = 0; i < 2; i++){
+    //        double startToPlane = (start - Point3D(0.0, 0.0, edge)).dot(normal);
+    //        double endToPlane = (end - Point3D(0.0, 0.0, edge)).dot(normal);
 
-        if(startToPlane < 0 && endToPlane < 0)
-            return;
+    //        if(startToPlane < 0 && endToPlane < 0)
+    //            return;
 
-        if(startToPlane > 0 && endToPlane > 0){
-            edge = m_far;
-            normal = Vector3D(0.0, 0.0, -1);
-//            cout<<"all inside"<<endl;
-            continue;
-        }
+    //        if(startToPlane > 0 && endToPlane > 0){
+    //            edge = m_far;
+    //            normal = Vector3D(0.0, 0.0, -1);
+    //            continue;
+    //        }
 
-        double t = startToPlane / (startToPlane - endToPlane);
+    //        double t = startToPlane / (startToPlane - endToPlane);
 
-        if(startToPlane < 0){
-            cout<<"start outside"<<endl;
-            start = start + t * (end - start);
-        }
-        else{
-            cout<<"end outside"<<endl;
-            end = start + t * (end - start);
-        }
-        edge = m_far;
-        normal = Vector3D(0.0, 0.0, -1);
+    //        if(startToPlane < 0){
+    //            start = start + t * (end - start);
+    //        }
+    //        else{
+    //            end = start + t * (end - start);
+    //        }
+    //        edge = m_far;
+    //        normal = Vector3D(0.0, 0.0, -1);
 
+    //    }
+
+    if(!(clipAgainstPlane(start,end,Point3D(0.0, 0.0, m_far),Vector3D(0.0, 0.0, -1)) &&
+         clipAgainstPlane(start,end,Point3D(0.0, 0.0, m_near),Vector3D(0.0, 0.0, 1)) ) ){
+        return;
     }
 
 
 
 
-    Point2D startF = normalize(project(start));
-    Point2D endF = normalize(project(end));
+    start = scaleToViewPort(project(start));
+    end = scaleToViewPort(project(end));
 
-    draw_line(QVector2D(startF[0],startF[1]),QVector2D(endF[0],endF[1]));
+    if(!(clipAgainstPlane(start,end,Point3D(topLeftView[0], 0.0, 0),Vector3D(1, 0.0, 0)) &&
+         clipAgainstPlane(start,end,Point3D(topRightView[0], 0.0, 0),Vector3D(-1, 0.0, 0))&&
+         clipAgainstPlane(start,end,Point3D(0, bottomLeftView[1], 0),Vector3D(0, 1, 0)) &&
+         clipAgainstPlane(start,end,Point3D(0, topLeftView[1], 0),Vector3D(0, -1, 0))) ){
+        return;
+    }
+
+
+    draw_line(QVector2D(start[0],start[1]),QVector2D(end[0],end[1]));
+
+}
+
+bool Viewer::clipAgainstPlane(Point3D &start, Point3D &end, Point3D plane, Vector3D normal)
+{
+    double startToPlane = (start - plane).dot(normal);
+    double endToPlane = (end - plane).dot(normal);
+
+    if(startToPlane < 0 && endToPlane < 0)
+        return false;
+
+    if(startToPlane > 0 && endToPlane > 0){
+        return true;
+    }
+
+    double t = startToPlane / (startToPlane - endToPlane);
+
+    if(startToPlane < 0){
+        start = start + t * (end - start);
+    }
+    else{
+        end = start + t * (end - start);
+    }
+    return true;
+
+
+}
+
+void Viewer::drawMouseTracking()
+{
+    if(mousePressX > width()) mousePressX = width();
+    if(mousePressX < 0) mousePressX = 0;
+    if(mousePressY > height()) mousePressY = height();
+    if(mousePressY < 0) mousePressY = 0;
+
+
+    if(mouseReleaseX > width()) mouseReleaseX = width();
+    if(mouseReleaseX < 0) mouseReleaseX = 0;
+    if(mouseReleaseY > height()) mouseReleaseY = height();
+    if(mouseReleaseY < 0) mouseReleaseY = 0;
+
+    //x1,y1 = topleft x2,y2 = bottomright
+
+    double x1 = min(mousePressX,mouseReleaseX);
+    double y1 = min(mousePressY,mouseReleaseY);
+
+    double x2 = max(mousePressX,mouseReleaseX);
+    double y2 = max(mousePressY,mouseReleaseY);
+
+    Point2D topLeft = Point2D(x1,y1);
+    Point2D topRight = Point2D(x2,y1);
+    Point2D bottomLeft = Point2D(x1,y2);
+    Point2D bottomRight = Point2D(x2,y2);
+
+    cout<<topLeft<<", "<<bottomRight<<endl;
+    setViewPort(bottomLeft,bottomRight,topLeft,topRight);
 
 }
 
@@ -437,6 +552,76 @@ void Viewer::drawCube()
 
 }
 
+void Viewer::drawViewPortBorder()
+{
+
+
+    set_colour(QColor(0, 0, 0));
+    draw_line(QVector2D(bottomLeftView[0],bottomLeftView[1]),QVector2D(bottomRightView[0],bottomRightView[1]));
+    draw_line(QVector2D(topLeftView[0],topLeftView[1]),QVector2D(topRightView[0],topRightView[1]));
+    draw_line(QVector2D(bottomLeftView[0],bottomLeftView[1]),QVector2D(topLeftView[0],topLeftView[1]));
+    draw_line(QVector2D(bottomRightView[0],bottomRightView[1]),QVector2D(topRightView[0],topRightView[1]));
+    update();
+
+}
+
+
+void Viewer::drawAxis()
+{
+    for(int i = 0 ; i < 4; i ++){
+        m_cubeAxisFinal[i] = m_view * m_Model * m_cubeAxisPoints[i];
+    }
+
+    for(int i = 0 ; i < 4; i ++){
+        m_worldAxisFinal[i] = m_view * m_worldAxisPoints[i];
+    }
+    set_colour(QColor(255, 0, 0));
+    draw3dLine(m_cubeAxisFinal[0],m_cubeAxisFinal[1]);
+    draw3dLine(m_cubeAxisFinal[0],m_cubeAxisFinal[2]);
+    draw3dLine(m_cubeAxisFinal[0],m_cubeAxisFinal[3]);
+    set_colour(QColor(0, 255, 0));
+    draw3dLine(m_worldAxisFinal[0],m_worldAxisFinal[2]);
+    draw3dLine(m_worldAxisFinal[0],m_worldAxisFinal[1]);
+    draw3dLine(m_worldAxisFinal[0],m_worldAxisFinal[3]);
+
+
+}
+
+void Viewer::initCube()
+{
+    m_cubePoints[0]=(Point3D(1.0,1.0,1.0));
+    m_cubePoints[1]=(Point3D(1.0,1.0,-1.0));
+    m_cubePoints[2]=(Point3D(-1.0,1.0,-1.0));
+    m_cubePoints[3]=(Point3D(-1.0,1.0,1.0));
+    m_cubePoints[4]=(Point3D(-1.0,-1.0,1.0));
+    m_cubePoints[5]=(Point3D(1.0,-1.0,1.0));
+    m_cubePoints[6]=(Point3D(1.0,-1.0,-1.0));
+    m_cubePoints[7]=(Point3D(-1.0,-1.0,-1.0));
+}
+
+void Viewer::initAxis()
+{
+    m_cubeAxisPoints[0]=(Point3D(0.0,0.0,0.0));
+    m_cubeAxisPoints[1]=(Point3D(0.5,0.0,0.0));
+    m_cubeAxisPoints[2]=(Point3D(0.0,0.5,0.0));
+    m_cubeAxisPoints[3]=(Point3D(0.0,0.0,0.5));
+
+    for(int i = 0 ; i < 4 ; i ++){
+        m_worldAxisPoints[i] = m_cubeAxisPoints[i];
+    }
+}
+
+void Viewer::setViewPort(Point2D bottomLeft, Point2D bottomRight, Point2D topLeft, Point2D topRight)
+{
+    double halfWidth = width()/2;
+    double halfHeight = height()/2;
+    bottomLeftView = Point2D( (bottomLeft[0] / halfWidth) - 1, 1 - (bottomLeft[1] / halfHeight));
+    bottomRightView = Point2D( (bottomRight[0] / halfWidth) - 1, 1 - (bottomRight[1] / halfHeight));
+    topRightView = Point2D( (topRight[0] / halfWidth) - 1, 1 - (topRight[1] / halfHeight));
+    topLeftView = Point2D( (topLeft[0] / halfWidth) - 1, 1 - (topLeft[1] / halfHeight));
+    drawViewPortBorder();
+}
+
 // Drawing Functions
 // ******************* Do Not Touch ************************ // 
 
@@ -474,51 +659,7 @@ void Viewer::draw_init() {
     glLineWidth(1.0);
 }
 
-void Viewer::initAxis()
-{
-    m_cubeAxisPoints[0]=(Point3D(0.0,0.0,0.0));
-    m_cubeAxisPoints[1]=(Point3D(0.5,0.0,0.0));
-    m_cubeAxisPoints[2]=(Point3D(0.0,0.5,0.0));
-    m_cubeAxisPoints[3]=(Point3D(0.0,0.0,0.5));
 
-    for(int i = 0 ; i < 4 ; i ++){
-        m_worldAxisPoints[i] = m_cubeAxisPoints[i];
-    }
-}
-
-void Viewer::drawAxis()
-{
-    for(int i = 0 ; i < 4; i ++){
-        m_cubeAxisFinal[i] = m_view * m_Model * m_cubeAxisPoints[i];
-    }
-
-    for(int i = 0 ; i < 4; i ++){
-        m_worldAxisFinal[i] = m_view * m_worldAxisPoints[i];
-    }
-    set_colour(QColor(255, 0, 0));
-    draw3dLine(m_cubeAxisFinal[0],m_cubeAxisFinal[1]);
-    draw3dLine(m_worldAxisFinal[0],m_worldAxisFinal[1]);
-    set_colour(QColor(0, 255, 0));
-    draw3dLine(m_cubeAxisFinal[0],m_cubeAxisFinal[2]);
-    draw3dLine(m_worldAxisFinal[0],m_worldAxisFinal[2]);
-    set_colour(QColor(0, 0, 255));
-    draw3dLine(m_cubeAxisFinal[0],m_cubeAxisFinal[3]);
-    draw3dLine(m_worldAxisFinal[0],m_worldAxisFinal[3]);
-
-
-}
-
-void Viewer::initCube()
-{
-    m_cubePoints[0]=(Point3D(1.0,1.0,1.0));
-    m_cubePoints[1]=(Point3D(1.0,1.0,-1.0));
-    m_cubePoints[2]=(Point3D(-1.0,1.0,-1.0));
-    m_cubePoints[3]=(Point3D(-1.0,1.0,1.0));
-    m_cubePoints[4]=(Point3D(-1.0,-1.0,1.0));
-    m_cubePoints[5]=(Point3D(1.0,-1.0,1.0));
-    m_cubePoints[6]=(Point3D(1.0,-1.0,-1.0));
-    m_cubePoints[7]=(Point3D(-1.0,-1.0,-1.0));
-}
 
 
 

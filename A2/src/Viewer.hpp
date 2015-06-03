@@ -41,6 +41,7 @@ public:
     // Restore all the transforms and perspective parameters to their
     // original state. Set the viewport to its initial size.
     void reset_view();
+    bool viewPortMode;
 
 protected:
 
@@ -101,6 +102,19 @@ private:
     Point3D m_worldAxisFinal[4];
 
 
+    Point2D bottomLeftView;
+    Point2D topRightView;
+    Point2D bottomRightView;
+    Point2D topLeftView;
+
+    double mousePressX;
+    double mousePressY;
+
+    double mouseReleaseX;
+    double mouseReleaseY;
+
+
+
     bool leftPressed;
     bool middlePressed;
     bool rightPressed;
@@ -108,9 +122,14 @@ private:
     void drawAxis();
     void initCube();
     void drawCube();
-    Point2D normalize(Point3D point);
+    void drawViewPortBorder();
+    void setViewPort(Point2D bottomLeft, Point2D bottomRight,Point2D topLeft, Point2D topRight);
+    Point3D scaleToViewPort(Point3D point);
     Point3D project(Point3D point);
     void draw3dLine(Point3D start, Point3D end);
+    bool clipAgainstPlane(Point3D &start, Point3D &end, Point3D plane, Vector3D normal);
+
+    void drawMouseTracking();
 
     void rotate(Matrix4x4 &mat, double angle, Axis axis);
     void translate(Matrix4x4 &mat, double x, double y, double z);

@@ -61,6 +61,12 @@ void AppWindow::keyPressEvent(QKeyEvent *event) {
         m_viewer->interactionMode = 5;
     } else if (event->key() == Qt::Key_A) {
         m_viewer->reset_view();
+    } else if (event->key() == Qt::Key_V) {
+        if(m_viewer->viewPortMode){
+            m_viewer->viewPortMode = false;
+        } else{
+            m_viewer->viewPortMode = true;
+        }
     }
 
 
