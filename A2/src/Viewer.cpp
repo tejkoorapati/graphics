@@ -5,6 +5,7 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include "Viewer.hpp"
+#include "a2.hpp"
 // #include "draw.hpp"
 
 #ifndef GL_MULTISAMPLE
@@ -14,12 +15,12 @@
 using namespace std;
 
 Viewer::Viewer(const QGLFormat& format, QWidget *parent) 
-    : QGLWidget(format, parent)
+: QGLWidget(format, parent)
     #if (QT_VERSION >= QT_VERSION_CHECK(5, 1, 0))
-    , mVertexBufferObject(QOpenGLBuffer::VertexBuffer)
-    , mVertexArrayObject(this)
+, mVertexBufferObject(QOpenGLBuffer::VertexBuffer)
+, mVertexArrayObject(this)
     #else
-    , mVertexBufferObject(QGLBuffer::VertexBuffer)
+, mVertexBufferObject(QGLBuffer::VertexBuffer)
     #endif
 {
     reset_view();
@@ -38,7 +39,7 @@ QSize Viewer::sizeHint() const {
 }
 
 void Viewer::set_perspective(double fov, double aspect,
-                             double near_p, double far_p)
+ double near_p, double far_p)
 {
     double a,c,cotOfFOV ;
 
@@ -61,7 +62,7 @@ void Viewer::reset_view()
 {
 
 
-    interactionMode = 0;
+    interactionMode = 3;
     //    m_projection = Matrix4x4();
     m_Model  = Matrix4x4();
     m_scale = Matrix4x4();
@@ -135,25 +136,25 @@ void Viewer::initializeGL() {
      * instead of QOpenGLVertexVufferObject. Also use QGLBuffer instead of
      * QOpenGLBuffer.
      */
-    uint vao;
+     uint vao;
 
-    typedef void (APIENTRY *_glGenVertexArrays) (GLsizei, GLuint*);
-    typedef void (APIENTRY *_glBindVertexArray) (GLuint);
+     typedef void (APIENTRY *_glGenVertexArrays) (GLsizei, GLuint*);
+     typedef void (APIENTRY *_glBindVertexArray) (GLuint);
 
-    _glGenVertexArrays glGenVertexArrays;
-    _glBindVertexArray glBindVertexArray;
+     _glGenVertexArrays glGenVertexArrays;
+     _glBindVertexArray glBindVertexArray;
 
-    glGenVertexArrays = (_glGenVertexArrays) QGLWidget::context()->getProcAddress("glGenVertexArrays");
-    glBindVertexArray = (_glBindVertexArray) QGLWidget::context()->getProcAddress("glBindVertexArray");
+     glGenVertexArrays = (_glGenVertexArrays) QGLWidget::context()->getProcAddress("glGenVertexArrays");
+     glBindVertexArray = (_glBindVertexArray) QGLWidget::context()->getProcAddress("glBindVertexArray");
 
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+     glGenVertexArrays(1, &vao);
+     glBindVertexArray(vao);
 
-    mVertexBufferObject.create();
-    mVertexBufferObject.setUsagePattern(QGLBuffer::DynamicDraw);
+     mVertexBufferObject.create();
+     mVertexBufferObject.setUsagePattern(QGLBuffer::DynamicDraw);
 #endif
 
-    if (!mVertexBufferObject.bind()) {
+     if (!mVertexBufferObject.bind()) {
         // std::cerr << "could not bind vertex buffer to the context." << std::endl;
         return;
     }
@@ -169,11 +170,53 @@ void Viewer::initializeGL() {
 
 void Viewer::paintGL() {
 
-
     draw_init();
     drawCube();
     drawAxis();
     drawViewPortBorder();
+
+    QString mode = "";
+    if(viewPortMode){
+      mode  = "Viewport Mode";
+  }
+  else{
+
+
+      switch (interactionMode){
+        case 0 :
+        mode  = "View Rotate Mode";
+        break;
+
+        case 1:
+        mode  = "View Translate Mode";
+        break;
+
+        case 2:
+        mode  = "View Perspective Mode";
+        break;
+
+        case 3:
+        mode  = "Model Rotate Mode";
+        break;
+
+        case 4:
+        mode  = "Model Translate Mode";
+        break;
+
+        case 5:
+        mode  = "View Scale Mode";
+        break;
+    }
+}
+
+    QString far = QString::number(m_far);
+    QString near = QString::number(m_near);
+
+    QString complete= "Far: "+ far + " Near: "+ near + ", " + mode;  
+
+
+label->setText(complete);
+
 }
 
 void Viewer::mousePressEvent ( QMouseEvent * event ) {
@@ -182,56 +225,63 @@ void Viewer::mousePressEvent ( QMouseEvent * event ) {
     prev_x = event->x();
     prev_y = event->y();
 
+    int button = event->button();
+    switch(button){
+        case 1 :
+        leftPressed = true;
+        break;
+        case 2:
+        rightPressed = true;
+        break;
+        case 4:
+        middlePressed = true;
+        break;
+    }
 
 
     if(viewPortMode){
+        if(!leftPressed) return;
         mousePressX = event->x();
         mousePressY = event->y();
         return;
     }
 
-    switch(event->button()){
-    case 1 :
-        leftPressed = true;
-        break;
-    case 2:
-        rightPressed = true;
-        break;
-    case 4:
-        middlePressed = true;
-        break;
-    }
 }
 
 void Viewer::mouseReleaseEvent ( QMouseEvent * event ) {
     // std::cerr << "Stub: button " << event->button() << " released\n";
+    int button = event->button();
+    switch(button){
+        case 1 :
+        leftPressed = false;
+        break;
+        case 2:
+        rightPressed = false;
+        break;
+        case 4:
+        middlePressed = false;
+        break;
+    }
+
     if(viewPortMode){
+        if(!leftPressed) return;
         mouseReleaseX = event->x();
         mouseReleaseY = event->y();
         drawMouseTracking();
-        viewPortMode = false;
         return;
     }
 
 
-    switch(event->button()){
-    case 1 :
-        leftPressed = false;
-        break;
-    case 2:
-        rightPressed = false;
-        break;
-    case 4:
-        middlePressed = false;
-        break;
-    }
 
 }
 
 void Viewer::mouseMoveEvent ( QMouseEvent * event ) {
     //std::cerr << "Stub: Motion at " << event->x() << ", " << event->y() << std::endl;
 
+
+
     if(viewPortMode){
+        if(!leftPressed) return;
         mouseReleaseX = event->x();
         mouseReleaseY = event->y();
         drawMouseTracking();
@@ -248,21 +298,17 @@ void Viewer::mouseMoveEvent ( QMouseEvent * event ) {
         scaleRatio = 0.99;
     }
 
-    //rotateWorld(signx*abs(diffx)*.5,1,0,0);
-    //    interactionMode = 4;
-
-
     switch (interactionMode){
-    case 0 :
+        case 0 :
         if(leftPressed)
-            rotate(m_view,rotationAngle,X);
+            rotate(m_view,rotationAngle,1,1);
         if(middlePressed)
-            rotate(m_view,rotationAngle,Y);
+            rotate(m_view,rotationAngle,2,1);
         if(rightPressed)
-            rotate(m_view,rotationAngle,Z);
+            rotate(m_view,rotationAngle,3,1);
         break;
 
-    case 1:
+        case 1:
         if(leftPressed)
             translate(m_view,translateDistance,0,0);
         if(middlePressed)
@@ -271,7 +317,7 @@ void Viewer::mouseMoveEvent ( QMouseEvent * event ) {
             translate(m_view,0,0,translateDistance);
         break;
 
-    case 2:
+        case 2:
         if(leftPressed){
             if (signx < 0 && m_fov <= 5){
                 return;
@@ -288,16 +334,16 @@ void Viewer::mouseMoveEvent ( QMouseEvent * event ) {
         set_perspective(m_fov,1,m_near,m_far);
         break;
 
-    case 3:
+        case 3:
         if(leftPressed)
-            rotate(m_Model,rotationAngle,X);
+            rotate(m_Model,rotationAngle,1,2);
         if(middlePressed)
-            rotate(m_Model,rotationAngle,Y);
+            rotate(m_Model,rotationAngle,2,2);
         if(rightPressed)
-            rotate(m_Model,rotationAngle,Z);
+            rotate(m_Model,rotationAngle,3,2);
         break;
 
-    case 4:
+        case 4:
         if(leftPressed)
             translate(m_Model,translateDistance,0,0);
         if(middlePressed)
@@ -306,7 +352,7 @@ void Viewer::mouseMoveEvent ( QMouseEvent * event ) {
             translate(m_Model,0,0,translateDistance);
         break;
 
-    case 5:
+        case 5:
         if(leftPressed)
             scale(m_scale,scaleRatio,1,1);
         if(middlePressed)
@@ -332,8 +378,8 @@ Point3D Viewer::project(Point3D point)
     Point3D projectedPoint = m_projection * point;
 
     Point3D finalPoint = Point3D(projectedPoint[0]/point[2],
-            projectedPoint[1]/point[2],
-            projectedPoint[2]/point[2]);
+        projectedPoint[1]/point[2],
+        projectedPoint[2]/point[2]);
 
     return finalPoint;
 
@@ -350,7 +396,7 @@ Point3D Viewer::scaleToViewPort(Point3D point)
 
 
     return( Point3D( scaleFactorWidth * (point[0] + 1) + bottomLeftView[0],
-            scaleFactorHeigth * (point[1] + 1) + bottomLeftView[1],point[2]) );
+        scaleFactorHeigth * (point[1] + 1) + bottomLeftView[1],point[2]) );
 
 
 }
@@ -360,54 +406,24 @@ Point3D Viewer::scaleToViewPort(Point3D point)
 void Viewer::draw3dLine(Point3D start, Point3D end)
 {
 
-    //    double edge = m_near;
-    //    Vector3D normal = Vector3D(0.0, 0.0, 1);
-    //    for(int i = 0; i < 2; i++){
-    //        double startToPlane = (start - Point3D(0.0, 0.0, edge)).dot(normal);
-    //        double endToPlane = (end - Point3D(0.0, 0.0, edge)).dot(normal);
-
-    //        if(startToPlane < 0 && endToPlane < 0)
-    //            return;
-
-    //        if(startToPlane > 0 && endToPlane > 0){
-    //            edge = m_far;
-    //            normal = Vector3D(0.0, 0.0, -1);
-    //            continue;
-    //        }
-
-    //        double t = startToPlane / (startToPlane - endToPlane);
-
-    //        if(startToPlane < 0){
-    //            start = start + t * (end - start);
-    //        }
-    //        else{
-    //            end = start + t * (end - start);
-    //        }
-    //        edge = m_far;
-    //        normal = Vector3D(0.0, 0.0, -1);
-
-    //    }
-
     if(!(clipAgainstPlane(start,end,Point3D(0.0, 0.0, m_far),Vector3D(0.0, 0.0, -1)) &&
-         clipAgainstPlane(start,end,Point3D(0.0, 0.0, m_near),Vector3D(0.0, 0.0, 1)) ) ){
+     clipAgainstPlane(start,end,Point3D(0.0, 0.0, m_near),Vector3D(0.0, 0.0, 1)) ) ){
         return;
-    }
+}
 
 
+start = scaleToViewPort(project(start));
+end = scaleToViewPort(project(end));
+
+if(!(clipAgainstPlane(start,end,Point3D(topLeftView[0], 0.0, 0),Vector3D(1, 0.0, 0)) &&
+ clipAgainstPlane(start,end,Point3D(topRightView[0], 0.0, 0),Vector3D(-1, 0.0, 0))&&
+ clipAgainstPlane(start,end,Point3D(0, bottomLeftView[1], 0),Vector3D(0, 1, 0)) &&
+ clipAgainstPlane(start,end,Point3D(0, topLeftView[1], 0),Vector3D(0, -1, 0))) ){
+    return;
+}
 
 
-    start = scaleToViewPort(project(start));
-    end = scaleToViewPort(project(end));
-
-    if(!(clipAgainstPlane(start,end,Point3D(topLeftView[0], 0.0, 0),Vector3D(1, 0.0, 0)) &&
-         clipAgainstPlane(start,end,Point3D(topRightView[0], 0.0, 0),Vector3D(-1, 0.0, 0))&&
-         clipAgainstPlane(start,end,Point3D(0, bottomLeftView[1], 0),Vector3D(0, 1, 0)) &&
-         clipAgainstPlane(start,end,Point3D(0, topLeftView[1], 0),Vector3D(0, -1, 0))) ){
-        return;
-    }
-
-
-    draw_line(QVector2D(start[0],start[1]),QVector2D(end[0],end[1]));
+draw_line(QVector2D(start[0],start[1]),QVector2D(end[0],end[1]));
 
 }
 
@@ -462,72 +478,11 @@ void Viewer::drawMouseTracking()
     Point2D bottomLeft = Point2D(x1,y2);
     Point2D bottomRight = Point2D(x2,y2);
 
-    cout<<topLeft<<", "<<bottomRight<<endl;
+    ////cout<<topLeft<<", "<<bottomRight<<endl;
     setViewPort(bottomLeft,bottomRight,topLeft,topRight);
 
 }
 
-void Viewer::rotate(Matrix4x4 &mat, double angle, Viewer::Axis axis)
-{
-    Matrix4x4 temp;
-
-    Vector4D r1,r2,r3,r4;
-    double c=cos(angle);
-    double s=sin(angle);
-
-    switch(axis){
-
-    case X:
-        r1=Vector4D(1,0,0,0);
-        r2=Vector4D(0,c,-s,0);
-        r3=Vector4D(0,s,c,0);
-        r4=Vector4D(0,0,0,1);
-        break;
-    case Y:
-        r1=Vector4D(c,0,s,0);
-        r2=Vector4D(0,1,0,0);
-        r3=Vector4D(-s,0,c,0);
-        r4=Vector4D(0,0,0,1);
-        break;
-    case Z:
-        r1=Vector4D(c,-s,0,0);
-        r2=Vector4D(s,c,0,0);
-        r3=Vector4D(0,0,1,0);
-        r4=Vector4D(0,0,0,1);
-        break;
-    }
-
-    temp=Matrix4x4(r1,r2,r3,r4);
-    mat= mat * temp ;
-}
-
-void Viewer::translate(Matrix4x4 &mat,double x,double y,double z)
-{
-    Matrix4x4 temp;
-    Vector4D r1,r2,r3,r4;
-
-    r1=Vector4D(1,0,0,x);
-    r2=Vector4D(0,1,0,y);
-    r3=Vector4D(0,0,1,z);
-    r4=Vector4D(0,0,0,1);
-    temp=Matrix4x4(r1,r2,r3,r4);
-    mat=mat*temp;
-
-}
-
-void Viewer::scale(Matrix4x4 &mat,double x,double y,double z)
-{
-    Matrix4x4 temp;
-    Vector4D r1,r2,r3,r4;
-
-    r1=Vector4D(x,0,0,0);
-    r2=Vector4D(0,y,0,0);
-    r3=Vector4D(0,0,z,0);
-    r4=Vector4D(0,0,0,1);
-    temp=Matrix4x4(r1,r2,r3,r4);
-    mat=temp*mat;
-
-}
 
 
 void Viewer::drawCube()
@@ -622,6 +577,9 @@ void Viewer::setViewPort(Point2D bottomLeft, Point2D bottomRight, Point2D topLef
     drawViewPortBorder();
 }
 
+void Viewer::setLabel(QLabel* statusLabel){
+    label = statusLabel;
+}
 // Drawing Functions
 // ******************* Do Not Touch ************************ // 
 

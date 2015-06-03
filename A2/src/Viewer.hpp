@@ -6,6 +6,8 @@
 #include <QMatrix4x4>
 #include <QtGlobal>
 #include <math.h>
+#include <QLabel>
+#include <QString>
 #include "algebra.hpp"
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 1, 0))
@@ -22,8 +24,6 @@ class Viewer : public QGLWidget {
 public:
     Viewer(const QGLFormat& format, QWidget *parent = 0);
     virtual ~Viewer();
-    
-    enum Axis {X,Y,Z};
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
     int interactionMode;
@@ -42,6 +42,7 @@ public:
     // original state. Set the viewport to its initial size.
     void reset_view();
     bool viewPortMode;
+    void setLabel(QLabel* statusLabel);
 
 protected:
 
@@ -113,6 +114,8 @@ private:
     double mouseReleaseX;
     double mouseReleaseY;
 
+    QLabel* label;
+
 
 
     bool leftPressed;
@@ -130,10 +133,6 @@ private:
     bool clipAgainstPlane(Point3D &start, Point3D &end, Point3D plane, Vector3D normal);
 
     void drawMouseTracking();
-
-    void rotate(Matrix4x4 &mat, double angle, Axis axis);
-    void translate(Matrix4x4 &mat, double x, double y, double z);
-    void scale(Matrix4x4 &mat, double x, double y, double z);
 
 };
 

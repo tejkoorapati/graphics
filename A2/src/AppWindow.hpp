@@ -15,17 +15,41 @@ class AppWindow : public QMainWindow
 public:
     AppWindow();
 
+private slots:
+
+void viewRotate();
+void viewTranslate();
+void viewPerspective();
+
+void modelRotate();
+void modelTranslate();
+void modelScale();
+
+void viewPortMode();
+
+void resetView();
+
 protected:
     void keyPressEvent(QKeyEvent *event);
 
 private:
     void createActions();
     void createMenu();
+    QAction* viewRotateAct;
+    QAction* viewTranslateAct;
+    QAction* viewPerspectiveAct;
+    QAction* modelRotateAct;
+    QAction* modelTranslateAct;
+    QAction* modelScaleAct;
+    QAction* viewPortModeAct;
+
 
     // Each menu itself
     QMenu* m_menu_app;
+    QMenu* m_menu_mode;
 
     std::vector<QAction*> m_menu_actions;
+     std::vector<QAction*> m_mode_actions;
     Viewer* m_viewer;
 };
 
