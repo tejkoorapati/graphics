@@ -5,10 +5,17 @@
 QT += opengl widgets
 CONFIG += c++11
 QMAKE_CXXFLAGS += -W -Wall -g 
-LIBS += -llua5.1
+#LIBS += -llua5.1
 TEMPLATE = app
 TARGET = puppeteer
-INCLUDEPATH += /usr/include/lua5.1
+#INCLUDEPATH += /usr/include/lua5.1
+
+
+LIBS += -L"C:/Program Files (x86)/Lua/5.1/lib" -llua5.1
+
+INCLUDEPATH += "C:/Program Files (x86)/Lua/5.1/include"
+
+#LIBS  += C:/temp/lua-5.1
 
 # Input
 HEADERS += algebra.hpp \
