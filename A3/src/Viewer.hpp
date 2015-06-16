@@ -5,13 +5,18 @@
 #include <QGLShaderProgram>
 #include <QMatrix4x4>
 #include <QtGlobal>
+#include "scene.hpp"
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 1, 0))
 #include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
+
+#include <QOpenGLFunctions>
 #else 
 #include <QGLBuffer>
 #endif
+
+class SceneNode;
 
 class Viewer : public QGLWidget {
     
@@ -23,6 +28,9 @@ public:
     
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
+    void setSceneNode(SceneNode* node);
+
+    void drawCircle(QColor color, QMatrix4x4 trans);
 
     // If you want to render a new frame, call do not call paintGL(),
     // instead, call update() to ensure that the view gets a paint 
@@ -53,12 +61,20 @@ private:
 
     QMatrix4x4 getCameraMatrix();
     void translateWorld(float x, float y, float z);
-    void rotateWorld(float x, float y, float z);
+    void rotateWorld(float angle,float x, float y, float z);
     void scaleWorld(float x, float y, float z);
     void set_colour(const QColor& col);
 
+    void vCalcRotVec(float fNewX, float fNewY,
+                     float fOldX, float fOldY,
+                     float fDiameter,
+                     float *fVecX, float *fVecY, float *fVecZ);
+    QMatrix4x4 vAxisRotMatrix(float fVecX, float fVecY, float fVecZ);
+
+
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 1, 0))
     QOpenGLBuffer mCircleBufferObject;
+    QOpenGLBuffer mSphereBufferObject;
     QOpenGLVertexArrayObject mVertexArrayObject;
 #else 
     QGLBuffer mCircleBufferObject;
@@ -66,10 +82,15 @@ private:
     
     int mMvpMatrixLocation;
     int mColorLocation;
-
+    int buttonPressed;
+    int prev_x;
+    int prev_y;
     QMatrix4x4 mPerspMatrix;
     QMatrix4x4 mTransformMatrix;
     QGLShaderProgram mProgram;
+
+    SceneNode* m_root;
 };
+
 
 #endif

@@ -2,6 +2,7 @@
 #define CS488_MATERIAL_HPP
 
 #include "algebra.hpp"
+#include <qopenglfunctions.h>
 
 class Material {
 public:

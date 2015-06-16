@@ -34,3 +34,5 @@ SOURCES += algebra.cpp \
            scene_lua.cpp \
            AppWindow.cpp \ 
            Viewer.cpp
+
+DISTFILES +=

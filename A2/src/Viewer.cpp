@@ -212,7 +212,7 @@ void Viewer::paintGL() {
     QString far = QString::number(m_far);
     QString near = QString::number(m_near);
 
-    QString complete= "Far: "+ far + " Near: "+ near + ", " + mode;  
+    QString complete= "Far: "+ far + " Near: "+ near + ", " + mode;
 
 
 label->setText(complete);

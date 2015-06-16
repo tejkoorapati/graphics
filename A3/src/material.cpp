@@ -16,4 +16,7 @@ PhongMaterial::~PhongMaterial()
 void PhongMaterial::apply_gl() const
 {
   // Perform OpenGL calls necessary to set up this material.
+    glShadeModel ( GL_SMOOTH );
+    glEnable ( GL_LIGHTING );
+    glEnable ( GL_LIGHT1 );
 }

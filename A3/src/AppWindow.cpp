@@ -20,6 +20,12 @@ AppWindow::AppWindow() {
     createMenu();
 }
 
+AppWindow::setSceneNode(SceneNode *node)
+{
+    m_viewer->setSceneNode(node);
+    node->setViewer(m_viewer);
+}
+
 void AppWindow::createActions() {
     // Creates a new action for quiting and pushes it onto the menu actions vector 
     QAction* quitAct = new QAction(tr("&Quit"), this);

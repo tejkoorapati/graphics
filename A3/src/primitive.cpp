@@ -8,7 +8,7 @@ Sphere::~Sphere()
 {
 }
 
-void Sphere::walk_gl(bool picking) const
+void Sphere::walk_gl(Viewer* viewer, QMatrix4x4 trans) const
 {
-  // Fill me in
+  viewer->drawCircle(QColor(Qt::GlobalColor::blue),trans);
 }

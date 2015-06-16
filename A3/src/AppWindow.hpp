@@ -6,6 +6,7 @@
 #include <QMenu>
 #include <QAction>
 #include <vector>
+#include "scene.hpp"
 #include "Viewer.hpp"
 
 class AppWindow : public QMainWindow
@@ -14,6 +15,7 @@ class AppWindow : public QMainWindow
 
 public:
     AppWindow();
+    setSceneNode(SceneNode* node);
 
 private:
     void createActions();

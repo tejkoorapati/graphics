@@ -34,6 +34,8 @@ int main(int argc, char** argv)
         window.showMaximized();
     }
 
+    window.setSceneNode(root);
+
     return app.exec();
 }
 
