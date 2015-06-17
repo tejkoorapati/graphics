@@ -46,8 +46,8 @@
 // #define GRLUA_ENABLE_DEBUG
 
 #ifdef GRLUA_ENABLE_DEBUG
-#  define GRLUA_DEBUG(x) do { std::cerr << x << std::endl; } while (0)
-#  define GRLUA_DEBUG_CALL do { std::cerr << __FUNCTION__ << std::endl; } while (0)
+#  define GRLUA_DEBUG(x) do { //std::cerr << x << std::endl; } while (0)
+#  define GRLUA_DEBUG_CALL do { //std::cerr << __FUNCTION__ << std::endl; } while (0)
 #else
 #  define GRLUA_DEBUG(x) do { } while (0)
 #  define GRLUA_DEBUG_CALL do { } while (0)
@@ -385,7 +385,7 @@ SceneNode* import_lua(const std::string& filename)
   GRLUA_DEBUG("Parsing the scene");
   // Now parse the actual scene
   if (luaL_loadfile(L, filename.c_str()) || lua_pcall(L, 0, 1, 0)) {
-    std::cerr << "Error loading " << filename << ": " << lua_tostring(L, -1) << std::endl;
+    //std::cerr << "Error loading " << filename << ": " << lua_tostring(L, -1) << std::endl;
     return 0;
   }
 
@@ -394,7 +394,7 @@ SceneNode* import_lua(const std::string& filename)
   // Pull the returned node off the stack
   gr_node_ud* data = (gr_node_ud*)luaL_checkudata(L, -1, "gr.node");
   if (!data) {
-    std::cerr << "Error loading " << filename << ": Must return the root node." << std::endl;
+    //std::cerr << "Error loading " << filename << ": Must return the root node." << std::endl;
     return 0;
   }
 

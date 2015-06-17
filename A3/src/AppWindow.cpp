@@ -162,6 +162,55 @@ void AppWindow::createActions() {
 
 }
 
+void AppWindow::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == Qt::Key_Escape) {
+        QCoreApplication::instance()->quit();
+    }
+    else if (event->key() == Qt::Key_Q) {
+        QCoreApplication::instance()->quit();
+    }
+    else if (event->key() == Qt::Key_C) {
+        select_circle();
+        select_circleAct->setChecked(!select_circleAct->isChecked());
+    }
+    else if (event->key() == Qt::Key_Z) {
+        select_zBuffer();
+        select_zBufferAct->setChecked(!select_zBufferAct->isChecked());
+    }
+    else if (event->key() == Qt::Key_B) {
+        select_backface();
+        select_backfaceAct->setChecked(!select_backfaceAct->isChecked());
+    }
+    else if (event->key() == Qt::Key_F) {
+        select_frontFace();
+        select_frontFaceAct->setChecked(!select_frontFaceAct->isChecked());
+    }
+    else if (event->key() == Qt::Key_O) {
+        select_resetRot();
+    }
+    else if (event->key() == Qt::Key_N) {
+        select_resetJoi();
+    }
+    else if (event->key() == Qt::Key_A) {
+        select_resetALL();
+    }
+    else if (event->key() == Qt::Key_P) {
+        select_PO();
+        select_POAct->setChecked(true);
+    }
+    else if (event->key() == Qt::Key_J) {
+        select_joints();
+        select_jointsAct->setChecked(true);
+    }
+    else if (event->key() == Qt::Key_U) {
+        select_undo();
+    }
+    else if (event->key() == Qt::Key_R) {
+        select_redo();
+    }
+    m_viewer-> update();
+}
+
 void AppWindow::createMenu() {
     m_menu_app = menuBar()->addMenu(tr("&Application"));
     m_menu_pick = menuBar()->addMenu(tr("&Picking"));

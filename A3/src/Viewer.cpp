@@ -53,7 +53,7 @@ Viewer::~Viewer() {
 void Viewer::undo()
 {
     if(undoNodes.size()==0){
-        std::cerr << "No transformations to undo." << std::endl;
+        //std::cerr << "No transformations to undo." << std::endl;
         return;
     }
 
@@ -69,7 +69,7 @@ void Viewer::undo()
 void Viewer::redo()
 {
     if(redoNodes.size()==0){
-        std::cerr << "No transformations to redo." << std::endl;
+        //std::cerr << "No transformations to redo." << std::endl;
         return;
     }
 
@@ -149,7 +149,7 @@ void Viewer::drawSphere(QColor color, QMatrix4x4 trans, std::string name)
 void Viewer::initializeGL() {
     QGLFormat glFormat = QGLWidget::format();
     if (!glFormat.sampleBuffers()) {
-        std::cerr << "Could not enable sample buffers." << std::endl;
+        //std::cerr << "Could not enable sample buffers." << std::endl;
         return;
     }
 
@@ -158,17 +158,17 @@ void Viewer::initializeGL() {
     glEnable(GL_DEPTH_TEST);
     
     if (!mProgram.addShaderFromSourceFile(QGLShader::Vertex, "shader.vert")) {
-        std::cerr << "Cannot load vertex shader." << std::endl;
+        //std::cerr << "Cannot load vertex shader." << std::endl;
         return;
     }
 
     if (!mProgram.addShaderFromSourceFile(QGLShader::Fragment, "shader.frag")) {
-        std::cerr << "Cannot load fragment shader." << std::endl;
+        //std::cerr << "Cannot load fragment shader." << std::endl;
         return;
     }
 
     if ( !mProgram.link() ) {
-        std::cerr << "Cannot link shaders." << std::endl;
+        //std::cerr << "Cannot link shaders." << std::endl;
         return;
     }
     double radius = width() < height() ?
@@ -277,12 +277,12 @@ void Viewer::initializeGL() {
 #endif
 
     //    if (!mCircleBufferObject.bind()) {
-    //        std::cerr << "could not bind vertex buffer to the context." << std::endl;
+    //        //std::cerr << "could not bind vertex buffer to the context." << std::endl;
     //        return;
     //    }
 
     if (!mSphereBufferObject.bind()) {
-        std::cerr << "could not bind vertex buffer to the context." << std::endl;
+        //std::cerr << "could not bind vertex buffer to the context." << std::endl;
         return;
     }
 
@@ -320,13 +320,12 @@ void Viewer::paintGL() {
     }
     else glDisable( GL_CULL_FACE );
 
-    draw_trackball_circle();
     QMatrix4x4 temp;
     temp.setToIdentity();
     //    drawCircle(QColor(Qt::GlobalColor::green),temp);
 
     m_root->walk_gl(false,this);
-
+    if(circle)draw_trackball_circle();
 }
 
 void Viewer::resizeGL(int width, int height) {
@@ -365,7 +364,7 @@ void Viewer::mousePressEvent ( QMouseEvent * event ) {
 }
 
 void Viewer::mouseReleaseEvent ( QMouseEvent * event ) {
-    std::cerr << "Stub: button " << event->button() << " released\n";
+    //std::cerr << "Stub: button " << event->button() << " released\n";
 
     if(event->button() == 4){
         MMB = false;
@@ -476,13 +475,13 @@ void Viewer::draw_trackball_circle()
     QMatrix4x4 transformMatrix;
     transformMatrix.translate(width()/2.0, height()/2.0, 0.0);
 
-    // Bind buffer object
-    //    mCircleBufferObject.allocate(circleData, 40 * 3 * sizeof(float));
-    //    mCircleBufferObject.bind();
-    //    mProgram.setUniformValue(mMvpMatrixLocation, orthoMatrix * transformMatrix);
+    //     Bind buffer object
+    mCircleBufferObject.allocate(circleData, 40 * 3 * sizeof(float));
+    mCircleBufferObject.bind();
+    mProgram.setUniformValue(mMvpMatrixLocation, orthoMatrix * transformMatrix);
 
-    // Draw buffer
-    //    glDrawArrays(GL_LINE_LOOP, 0, 40);
+    //     Draw buffer
+    glDrawArrays(GL_LINE_LOOP, 0, 40);
 
 }
 

@@ -40,7 +40,7 @@ SceneNode* SceneNode::findNode(std::string name)
 void SceneNode::rotate(char axis, double angle)
 {
 
-    //    std::cerr << "Stub: Rotate " << m_name << " by " << angle ;
+    //    //std::cerr << "Stub: Rotate " << m_name << " by " << angle ;
 
     QMatrix4x4 temp;
     temp.setToIdentity();
@@ -57,7 +57,7 @@ void SceneNode::rotate(char axis, double angle)
             angle =  myNode->m_joint_x.min - myNode->curXangle;
         }
         myNode->curXangle += angle;
-        std::cerr << "axis x with angle"<< angle << std::endl;
+        //std::cerr << "axis x with angle"<< angle << std::endl;
         temp.rotate(angle,1,0,0);
         break;
     case 'y':
@@ -68,11 +68,11 @@ void SceneNode::rotate(char axis, double angle)
             angle =  myNode->m_joint_y.min - myNode->curYangle;
         }
         myNode->curYangle += angle;
-        std::cerr << "axis y with angle"<< angle << std::endl;
+        //std::cerr << "axis y with angle"<< angle << std::endl;
         temp.rotate(angle,0,1,0);
         break;
     case 'z' :
-        std::cerr << "axis z with angle"<< angle << std::endl;
+        //std::cerr << "axis z with angle"<< angle << std::endl;
         temp.rotate(angle,0,0,1);
         break;
     }
@@ -82,7 +82,7 @@ void SceneNode::rotate(char axis, double angle)
 
 void SceneNode::scale(const Vector3D& amount)
 {
-    //  std::cerr << "Stub: Scale " << m_name << " by " << amount << std::endl;
+    //  //std::cerr << "Stub: Scale " << m_name << " by " << amount << std::endl;
 
     QMatrix4x4 temp;
     temp.scale(amount[0],amount[1],amount[2]);
@@ -91,7 +91,7 @@ void SceneNode::scale(const Vector3D& amount)
 
 void SceneNode::translate(const Vector3D& amount)
 {
-    //  std::cerr << "Stub: Translate " << m_name << " by " << amount << std::endl;
+    //  //std::cerr << "Stub: Translate " << m_name << " by " << amount << std::endl;
     QMatrix4x4 temp;
     int scaleAmount = 1;
     temp.translate(amount[0]*scaleAmount,amount[1]*scaleAmount,amount[2]*scaleAmount);
@@ -117,7 +117,7 @@ void SceneNode::storeRedo()
 void SceneNode::undo()
 {
     if(undoStack.size() == 0){
-        std::cerr << "No transformations to undo." << std::endl;
+        //std::cerr << "No transformations to undo." << std::endl;
         return;
     }
     storeRedo();
@@ -130,7 +130,7 @@ void SceneNode::undo()
 
 void SceneNode::redo(){
     if(redoStack.size() == 0){
-        std::cerr << "No transformations to redo." << std::endl;
+        //std::cerr << "No transformations to redo." << std::endl;
         return;
     }
     storeUndo();
@@ -230,7 +230,7 @@ void GeometryNode::walk_gl(bool picking, Viewer* viewer) const
     {
         glPushName( m_id );
     }
-    //    std::cerr << "Printing: " << m_name <<  std::endl;
+    //    //std::cerr << "Printing: " << m_name <<  std::endl;
 
     Colour color = Colour(1.0,1.0,0.0);
 
