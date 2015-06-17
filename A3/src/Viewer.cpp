@@ -128,7 +128,7 @@ void Viewer::setSceneNode(SceneNode *node)
 
 void Viewer::drawSphere(QColor color, QMatrix4x4 trans, std::string name)
 {
-    double radius = width() < height() ? (float)width() * 0.25 : (float)height() * 0.25;
+//    double radius = width() < height() ? (float)width() * 0.25 : (float)height() * 0.25;
     set_colour(color);
     if(joints){
         int i;
@@ -181,43 +181,9 @@ void Viewer::initializeGL() {
         circleData[i*3 + 1] = radius * sin(i*2*M_PI/40);
         circleData[i*3 + 2] = 0.0;
     }
-    //    float X = .525731112119133606 ;
-    //    float Z = 0.850650808352039932 ;
 
-    //    static GLfloat vdata[12][3] = {
-    //        {-X, 0.0, Z}, {X, 0.0, Z}, {-X, 0.0, -Z}, {X, 0.0, -Z},
-    //        {0.0, Z, X}, {0.0, Z, -X}, {0.0, -Z, X}, {0.0, -Z, -X},
-    //        {Z, X, 0.0}, {-Z, X, 0.0}, {Z, -X, 0.0}, {-Z, -X, 0.0}
-    //    };
-    //    static GLuint tindices[20][3] = {
-    //        {0,4,1}, {0,9,4}, {9,5,4}, {4,5,8}, {4,8,1},
-    //        {8,10,1}, {8,3,10}, {5,3,8}, {5,2,3}, {2,7,3},
-    //        {7,10,3}, {7,6,10}, {7,11,6}, {11,0,6}, {0,1,6},
-    //        {6,1,10}, {9,0,11}, {9,11,2}, {9,2,5}, {7,2,11} };
 
-    //    for (int i = 0; i < 20; i++) {
-    //        /* color information here */
-    //        float x1 =(vdata[tindices[i][0]][0]);
-    //        float y1 = (vdata[tindices[i][0]][1]);
-    //        float z1 = (vdata[tindices[i][0]][2]);
-    //        float x2 =(vdata[tindices[i][1]][0]);
-    //        float y2 = (vdata[tindices[i][1]][1]);
-    //        float z2 = (vdata[tindices[i][1]][2]);
-    //        float x3 =(vdata[tindices[i][2]][0]);
-    //        float y3 = (vdata[tindices[i][2]][1]);
-    //        float z3 = (vdata[tindices[i][2]][2]);
-    //       sphereData[i*9+0]= x1;
-    //       sphereData[i*9+1]= y1;
-    //       sphereData[i*9+2]= z1;
-    //       sphereData[i*9+3]= x2;
-    //       sphereData[i*9+4]= y2;
-    //       sphereData[i*9+5]= z2;
-    //       sphereData[i*9+6]= x3;
-    //       sphereData[i*9+7]= y3;
-    //       sphereData[i*9+8]= z3;
-    //    }
-
-    int degrees = 5; // degrees of rotation
+    int degrees = 5;
     float x, y, z;
     int vertex = 0;
     float convert = M_PI/180;
@@ -225,19 +191,19 @@ void Viewer::initializeGL() {
         float phi =  M_PI/180*ph2;
         for ( int th2 = 0; th2 <= 360; th2 += degrees*2 ) {
             float theta = convert*th2;
-            x = radius*sin( theta ) * cos( phi );
-            y = radius*cos( theta ) * cos( phi );
-            z = radius*sin( phi );
-            sphereData[vertex] = x;
-            sphereData[vertex + 1] = y;
-            sphereData[vertex + 2] = z;
-            x = radius*sin( theta ) * cos( convert*(ph2 + degrees) );
-            y = radius*cos( theta ) * cos( convert*(ph2 + degrees) );
-            z = radius*sin( convert*(ph2 + degrees) );
-            sphereData[vertex + 3] = x;
-            sphereData[vertex + 4] = y;
-            sphereData[vertex + 5] = z;
-            vertex += 6;
+            x=radius*sin(theta)*cos(phi);
+            y=radius*cos(theta)*cos(phi);
+            z=radius*sin(phi);
+            sphereData[vertex]=x;
+            sphereData[vertex+1]=y;
+            sphereData[vertex+2]=z;
+            x=radius*sin(theta)*cos(convert*(ph2+degrees));
+            y=radius*cos(theta)*cos(convert*(ph2+degrees));
+            z=radius*sin(convert*(ph2+degrees));
+            sphereData[vertex+3]=x;
+            sphereData[vertex+4]=y;
+            sphereData[vertex+5]=z;
+            vertex+=6;
         }
     }
 
@@ -520,7 +486,7 @@ void Viewer::vCalcRotVec(float fNewX, float fNewY,
                          float fOldX, float fOldY,
                          float fDiameter,
                          float *fVecX, float *fVecY, float *fVecZ) {
-    long  nXOrigin, nYOrigin;
+//    long  nXOrigin, nYOrigin;
     float fNewVecX, fNewVecY, fNewVecZ,        /* Vector corresponding to new mouse location */
             fOldVecX, fOldVecY, fOldVecZ,        /* Vector corresponding to old mouse location */
             fLength;
