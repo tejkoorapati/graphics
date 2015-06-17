@@ -66,138 +66,196 @@
 
 
 
--- A humanoid puppet.
+-- Colors
 
+red = gr.material({1.0, 0.0, 0.0}, {0.1, 0.1, 0.1}, 10)
+blue = gr.material({0.0, 0.0, 1.0}, {0.1, 0.1, 0.1}, 10)
+green = gr.material({0.0, 1.0, 0.0}, {0.1, 0.1, 0.1}, 10)
+white = gr.material({1.0, 1.0, 1.0}, {0.1, 0.1, 0.1}, 10)
+yellow = gr.material({1.0, 1.0, 0}, {0.1, 0.1, 0.1}, 10)
+orange = gr.material({1.0, .5, 0}, {0.1, 0.1, 0.1}, 10)
+purple =  gr.material({1.0, 0, 1.0}, {0.1, 0.1, 0.1}, 10)
+black =  gr.material({0, 0, 0}, {0.1, 0.1, 0.1}, 10)
 -- Create root nodes.
 root = gr.node('root')
 root:translate(0,50,0);
 root:scale(.5,.5,.5);
+jointPoint = gr.sphere('JointPoint');
+			jointPoint:scale(.1,.1,30);
 
 	--torso
 	torso = gr.node('torso')
 	root:add_child(torso)
 	torsoG = gr.sphere('torsoG');
 	torso:add_child(torsoG)
-	torso:scale(1,1.4,1)
 		--shoulders
 		shoulders = gr.node('shoulders')
 		torso:add_child(shoulders)
 		shouldersG = gr.sphere('shouldersG')
 		shoulders:add_child(shouldersG);
-		shouldersG:translate(0,85,0);
+		shoulders:translate(0,85,0);
 		shouldersG:scale(2,.3,.3)
 			--neck
 			neck = gr.joint('neck', {-50, 0, 50}, {0, 0, 0})
 			shoulders:add_child(neck)
 			neckG = gr.sphere('neckG')
 			neck:add_child(neckG);
-			neckG:translate(0,100,0);
-			neckG:scale(0.1,.2,1)
+			-- neck:add_child(jointPoint)
+			neck:translate(0,20,0);
+			neckG:scale(0.1,.2,.2)
 				--head
 				head = gr.joint('head', {-50, 0, 50}, {-50, 0, 50})
 				neck:add_child(head)
 				headG = gr.sphere('headG')
 				head:add_child(headG);
-				headG:translate(0,140,0);
-				headG:scale(.4,.4,1)
-					--head
-					headG = gr.sphere('headG')
-					head:add_child(headG);
-					headG:translate(0,140,0);
-					headG:scale(.05,.05,.05)
+				-- head:add_child(jointPoint)
+				head:translate(0,10,0);
+				headG:translate(0,30,0)
+				headG:scale(.4,.4,.4)
+					-- --nose
+					noseG = gr.sphere('noseG')
+					head:add_child(noseG);
+					noseG:translate(0,30,30);
+					noseG:scale(.05,.05,.05)
 			--leftUpperArm
 			leftUpperArm = gr.joint('leftUpperArm', {-180, 0, 0}, {0, 0, 90})
+			-- leftUpperArm:add_child(jointPoint)
 			shoulders:add_child(leftUpperArm)
 			leftUpperArmG = gr.sphere('leftUpperArmG')
 			leftUpperArm:add_child(leftUpperArmG);
-			leftUpperArmG:translate(120,50,0);
-			leftUpperArmG:scale(0.1,.5,1)
+			leftUpperArm:translate(120,0,0);
+			leftUpperArmG:translate(0,-40,0)
+			leftUpperArmG:scale(0.1,.5,.2)
+			leftUpperArm:rotate('x',-90)
+
 				--leftLowerArm
 				leftLowerArm = gr.joint('leftLowerArm', {-150, 0, 0}, {0, 0, 0})
-				shoulders:add_child(leftLowerArm)
+				leftUpperArm:add_child(leftLowerArm)
+				-- leftLowerArm:add_child(jointPoint)
 				leftLowerArmG = gr.sphere('leftLowerArmG')
 				leftLowerArm:add_child(leftLowerArmG);
-				leftLowerArmG:translate(120,0,0);
-				leftLowerArmG:scale(0.1,.5,1)
+				leftLowerArm:translate(0,-80,0);
+				leftLowerArmG:translate(0,-30,0);
+				leftLowerArmG:scale(0.1,.5,.2)
+				leftLowerArm:rotate('x',-100)
 					--leftHand
 					leftHand = gr.joint('leftHand', {-20, 0, 20}, {-20, 0, 20})
-					shoulders:add_child(leftHand)
+					leftLowerArm:add_child(leftHand)
+					-- leftHand:add_child(jointPoint)
 					leftHandG = gr.sphere('leftHandG')
-					leftHand:add_child(leftHandG);
-					leftHandG:translate(120,-40,0);
-					leftHandG:scale(0.1,.1,1)
+					leftHand:add_child(leftHandG)
+					leftHand:translate(0,-60,0)
+					leftHandG:translate(0,-20,0)
+					leftHandG:scale(0.1,.3,.2)
 			--rightUpperArm
 			rightUpperArm = gr.joint('rightUpperArm', {-180, 0, 0}, {-90, 0, 0})
+			-- rightUpperArm:add_child(jointPoint)
 			shoulders:add_child(rightUpperArm)
 			rightUpperArmG = gr.sphere('rightUpperArmG')
 			rightUpperArm:add_child(rightUpperArmG);
-			rightUpperArmG:translate(-120,50,0);
-			rightUpperArmG:scale(0.1,.5,1)
+			rightUpperArm:translate(-120,0,0);
+			rightUpperArmG:translate(0,-40,0)
+			rightUpperArmG:scale(0.1,.5,.2)
+
 				--rightLowerArm
 				rightLowerArm = gr.joint('rightLowerArm', {-150, 0, 0}, {0, 0, 0})
-				shoulders:add_child(rightLowerArm)
+				rightUpperArm:add_child(rightLowerArm)
+				-- rightLowerArm:add_child(jointPoint)
 				rightLowerArmG = gr.sphere('rightLowerArmG')
 				rightLowerArm:add_child(rightLowerArmG);
-				rightLowerArmG:translate(-120,0,0);
-				rightLowerArmG:scale(0.1,.5,1)
+				rightLowerArm:translate(0,-80,0);
+				rightLowerArmG:translate(0,-30,0);
+				rightLowerArmG:scale(0.1,.5,.2)
 					--rightHand
 					rightHand = gr.joint('rightHand', {-20, 0, 20}, {-20, 0, 20})
-					shoulders:add_child(rightHand)
+					rightLowerArm:add_child(rightHand)
+					-- rightHand:add_child(jointPoint)
 					rightHandG = gr.sphere('rightHandG')
-					rightHand:add_child(rightHandG);
-					rightHandG:translate(-120,-40,0);
-					rightHandG:scale(0.1,.1,1)
+					rightHand:add_child(rightHandG)
+					rightHand:translate(0,-60,0)
+					rightHandG:translate(0,-20,0)
+					rightHandG:scale(0.1,.3,.2)
 		--hips
 		hips = gr.node('hips')
 		torso:add_child(hips)
 		hipsG = gr.sphere('hipsG')
 		hips:add_child(hipsG);
-		hipsG:translate(0,-85,0);
+		hips:translate(0,-85,0);
 		hipsG:scale(1.5,.3,.3)
 		--leftUpperLeg
 			leftUpperLeg = gr.joint('leftUpperLeg', {-180, 0, 0}, {0, 0, 90})
 			hips:add_child(leftUpperLeg)
+			-- leftUpperLeg:add_child(jointPoint)
 			leftUpperLegG = gr.sphere('leftUpperLegG')
 			leftUpperLeg:add_child(leftUpperLegG);
-			leftUpperLegG:translate(100,-120,0);
-			leftUpperLegG:scale(0.1,.5,1)
+			leftUpperLeg:translate(100,0,0);
+			leftUpperLegG:translate(0,-40,0);
+			leftUpperLegG:scale(0.1,.5,.2)
 				--leftLowerLeg
 				leftLowerLeg = gr.joint('leftLowerLeg', {0, 0, 50}, {0, 0, 0})
-				hips:add_child(leftLowerLeg)
+				leftUpperLeg:add_child(leftLowerLeg)
+				-- leftLowerLeg:add_child(jointPoint)
 				leftLowerLegG = gr.sphere('leftLowerLegG')
 				leftLowerLeg:add_child(leftLowerLegG);
-				leftLowerLegG:translate(100,-170,0);
-				leftLowerLegG:scale(0.1,.5,1)
+				leftLowerLeg:translate(0,-80,0);
+				leftLowerLegG:translate(0,-30,0);
+				leftLowerLegG:scale(0.1,.5,.2)
+				-- leftLowerArm:rotate('x',-50)
 					--leftFoot
 					leftFoot = gr.joint('leftFoot', {-20, 0, 20}, {0, 0, 0})
-					hips:add_child(leftFoot)
+					leftLowerLeg:add_child(leftFoot)
+					-- leftFoot:add_child(jointPoint)
 					leftFootG = gr.sphere('leftFootG')
-					leftFoot:add_child(leftFootG);
-					leftFootG:translate(100,-210,0);
-					leftFootG:scale(0.1,.1,1)
-
-
-			--rightUpperLeg
-			rightUpperLeg = gr.joint('rightUpperLeg', {-180, 0, 0}, {0, 0, 90})
+					leftFoot:add_child(leftFootG)
+					leftFoot:translate(0,-60,0)
+					leftFootG:translate(0,-10,5);
+					leftFootG:scale(.1,.1,.3)
+		--rightUpperLeg
+			rightUpperLeg = gr.joint('rightUpperLeg', {-180, 0, 0}, {-90, 0, 0})
 			hips:add_child(rightUpperLeg)
+			-- rightUpperLeg:add_child(jointPoint)
 			rightUpperLegG = gr.sphere('rightUpperLegG')
 			rightUpperLeg:add_child(rightUpperLegG);
-			rightUpperLegG:translate(-100,-120,0);
-			rightUpperLegG:scale(0.1,.5,1)
+			rightUpperLeg:translate(-100,0,0);
+			rightUpperLegG:translate(0,-40,0);
+			rightUpperLegG:scale(0.1,.5,.2)
 				--rightLowerLeg
 				rightLowerLeg = gr.joint('rightLowerLeg', {0, 0, 50}, {0, 0, 0})
-				hips:add_child(rightLowerLeg)
+				rightUpperLeg:add_child(rightLowerLeg)
+				-- rightLowerLeg:add_child(jointPoint)
 				rightLowerLegG = gr.sphere('rightLowerLegG')
 				rightLowerLeg:add_child(rightLowerLegG);
-				rightLowerLegG:translate(-100,-170,0);
-				rightLowerLegG:scale(0.1,.5,1)
+				rightLowerLeg:translate(0,-80,0);
+				rightLowerLegG:translate(0,-30,0);
+				rightLowerLegG:scale(0.1,.5,.2)
 					--rightFoot
 					rightFoot = gr.joint('rightFoot', {-20, 0, 20}, {0, 0, 0})
-					hips:add_child(rightFoot)
+					rightLowerLeg:add_child(rightFoot)
+					-- rightFoot:add_child(jointPoint)
 					rightFootG = gr.sphere('rightFootG')
-					rightFoot:add_child(rightFootG);
-					rightFootG:translate(-100,-210,0);
-					rightFootG:scale(0.1,.1,1)
+					rightFoot:add_child(rightFootG)
+					rightFoot:translate(0,-60,0)
+					rightFootG:translate(0,-10,5);
+					rightFootG:scale(.1,.1,.3)
 
-
+--Set colors
+headG:set_material(white)
+neckG:set_material(green)
+leftUpperArmG:set_material(green)
+leftLowerArmG:set_material(red)
+leftHandG:set_material(yellow)
+rightUpperArmG:set_material(green)
+rightLowerArmG:set_material(red)
+rightHandG:set_material(yellow)
+leftUpperLegG:set_material(green)
+leftLowerLegG:set_material(red)
+leftFootG:set_material(yellow)
+rightUpperLegG:set_material(green)
+rightLowerLegG:set_material(red)
+rightFootG:set_material(yellow)
+torsoG:set_material(blue)
+shouldersG:set_material(yellow)
+hipsG:set_material(yellow)
+noseG:set_material(red)
+jointPoint:set_material(black)
 return root

@@ -9,13 +9,13 @@ class Viewer;
 class Primitive {
 public:
   virtual ~Primitive();
-  virtual void walk_gl(Viewer* viewer, QMatrix4x4 trans) const = 0;
+  virtual void walk_gl(Viewer* viewer, QMatrix4x4 trans, Colour color, std::string name) const = 0;
 };
 
 class Sphere : public Primitive {
 public:
   virtual ~Sphere();
-  virtual void walk_gl(Viewer* viewer, QMatrix4x4 trans) const;
+  virtual void walk_gl(Viewer* viewer, QMatrix4x4 trans, Colour color, std::string name) const;
 };
 
 #endif

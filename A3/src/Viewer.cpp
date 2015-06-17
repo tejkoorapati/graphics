@@ -13,16 +13,102 @@ Viewer::Viewer(const QGLFormat& format, QWidget *parent)
     : QGLWidget(format, parent)
     #if (QT_VERSION >= QT_VERSION_CHECK(5, 1, 0))
     , mCircleBufferObject(QOpenGLBuffer::VertexBuffer)
+    , mSphereBufferObject(QOpenGLBuffer::VertexBuffer)
     , mVertexArrayObject(this)
     #else
     , mCircleBufferObject(QGLBuffer::VertexBuffer)
+    , mSphereBufferObject(QOpenGLBuffer::VertexBuffer)
     #endif
 {
+
+    leftUpperArm   = false;
+    leftLowerArm   = false;
+    leftHand       = false;
+    leftUpperLeg   = false;
+    leftLowerLeg   = false;
+    leftFoot       = false;
+    rightUpperArm  = false;
+    rightLowerArm  = false;
+    rightHand      = false;
+    rightUpperLeg  = false;
+    rightLowerLeg  = false;
+    rightFoot      = false;
+    neck           = false;
+    head           = false;
+    joints         = false;
+    PO             = true;
+    MMB            = false;
+    RMB            = false;
+    backFace       = false;
+    frontFace      = false;
+    zBuffer          = false;
+    circle         = false;
 
 }
 
 Viewer::~Viewer() {
     // Nothing to do here right now.
+}
+
+void Viewer::undo()
+{
+    if(undoNodes.size()==0){
+        std::cerr << "No transformations to undo." << std::endl;
+        return;
+    }
+
+    std::vector<SceneNode*> toUndo = undoNodes[undoNodes.size()-1];
+    redoNodes.push_back(toUndo);
+    for(int i = 0; i< toUndo.size(); i++ ){
+        toUndo[i]->undo();
+    }
+    undoNodes.pop_back();
+    update();
+}
+
+void Viewer::redo()
+{
+    if(redoNodes.size()==0){
+        std::cerr << "No transformations to redo." << std::endl;
+        return;
+    }
+
+    std::vector<SceneNode*> toRedo = redoNodes[redoNodes.size()-1];
+    undoNodes.push_back(toRedo);
+    for(int i = 0; i< toRedo.size(); i++ ){
+        toRedo[i]->redo();
+    }
+
+    redoNodes.pop_back();
+    update();
+
+}
+
+void Viewer::resetJoints()
+{
+    m_root->resetRecurse();
+    undoNodes.clear();
+    redoNodes.clear();
+    update();
+}
+
+void Viewer::resetAll()
+{
+    resetPos();
+    resetRot();
+    resetJoints();
+}
+
+void Viewer::resetPos()
+{
+    mTransformMatrix.setToIdentity();
+    update();
+}
+
+void Viewer::resetRot()
+{
+    mRotationMatrix.setToIdentity();
+    update();
 }
 
 QSize Viewer::minimumSizeHint() const {
@@ -36,48 +122,27 @@ QSize Viewer::sizeHint() const {
 void Viewer::setSceneNode(SceneNode *node)
 {
     m_root = node;
+    m_root->resetInitRecurse();
+    updateSelectedNodes();
 }
 
-void Viewer::drawCircle(QColor color, QMatrix4x4 trans)
+void Viewer::drawSphere(QColor color, QMatrix4x4 trans, std::string name)
 {
-    double radius = width() < height() ?
-                (float)width() * 0.25 : (float)height() * 0.25;
-
-
-
-    float circleData[120];
-    for(size_t i=0; i<40; ++i) {
-        circleData[i*3] = radius * cos(i*2*M_PI/40);
-        circleData[i*3 + 1] = radius * sin(i*2*M_PI/40);
-        circleData[i*3 + 2] = 0;
-    }
-
-    mSphereBufferObject.allocate(circleData, 40 * 3 * sizeof(float));
-
-    int current_width = width();
-    int current_height = height();
-
-    // Set up for orthogonal drawing to draw a circle on screen.
-    // You'll want to make the rest of the function conditional on
-    // whether or not we want to draw the circle this time around.
-
+    double radius = width() < height() ? (float)width() * 0.25 : (float)height() * 0.25;
     set_colour(color);
-
-    // Set orthographic Matrix
-    QMatrix4x4 orthoMatrix;
-    orthoMatrix.ortho(0.0, (float)current_width,0.0, (float)current_height, -100, 100);
-
-    // Translate the view to the middle
-
-
-
-    // Bind buffer object
-    mSphereBufferObject.bind();
-    //    trans.setToIdentity();
+    if(joints){
+        int i;
+        for(i = 0; i < selectedNodes.size(); i++){
+            SceneNode* temp = selectedNodes[i]->findNode(name);
+            if(temp != NULL && temp){
+                set_colour(Qt::GlobalColor::black);
+            }
+        }
+    }
     mProgram.setUniformValue(mMvpMatrixLocation, getCameraMatrix()* trans);
-
-    // Draw buffer
-    glDrawArrays(GL_LINE_LOOP, 0, 40);
+    mSphereBufferObject.allocate(sphereData, 36*37*6* sizeof(float));
+    mSphereBufferObject.bind();
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 36*37*6);
 
 }
 
@@ -111,50 +176,70 @@ void Viewer::initializeGL() {
 
 
 
-    float circleData[120];
     for(size_t i=0; i<40; ++i) {
         circleData[i*3] = radius * cos(i*2*M_PI/40);
         circleData[i*3 + 1] = radius * sin(i*2*M_PI/40);
         circleData[i*3 + 2] = 0.0;
-
-
     }
+    //    float X = .525731112119133606 ;
+    //    float Z = 0.850650808352039932 ;
 
+    //    static GLfloat vdata[12][3] = {
+    //        {-X, 0.0, Z}, {X, 0.0, Z}, {-X, 0.0, -Z}, {X, 0.0, -Z},
+    //        {0.0, Z, X}, {0.0, Z, -X}, {0.0, -Z, X}, {0.0, -Z, -X},
+    //        {Z, X, 0.0}, {-Z, X, 0.0}, {Z, -X, 0.0}, {-Z, -X, 0.0}
+    //    };
+    //    static GLuint tindices[20][3] = {
+    //        {0,4,1}, {0,9,4}, {9,5,4}, {4,5,8}, {4,8,1},
+    //        {8,10,1}, {8,3,10}, {5,3,8}, {5,2,3}, {2,7,3},
+    //        {7,10,3}, {7,6,10}, {7,11,6}, {11,0,6}, {0,1,6},
+    //        {6,1,10}, {9,0,11}, {9,11,2}, {9,2,5}, {7,2,11} };
 
-    /*
-    float circleData[336];
+    //    for (int i = 0; i < 20; i++) {
+    //        /* color information here */
+    //        float x1 =(vdata[tindices[i][0]][0]);
+    //        float y1 = (vdata[tindices[i][0]][1]);
+    //        float z1 = (vdata[tindices[i][0]][2]);
+    //        float x2 =(vdata[tindices[i][1]][0]);
+    //        float y2 = (vdata[tindices[i][1]][1]);
+    //        float z2 = (vdata[tindices[i][1]][2]);
+    //        float x3 =(vdata[tindices[i][2]][0]);
+    //        float y3 = (vdata[tindices[i][2]][1]);
+    //        float z3 = (vdata[tindices[i][2]][2]);
+    //       sphereData[i*9+0]= x1;
+    //       sphereData[i*9+1]= y1;
+    //       sphereData[i*9+2]= z1;
+    //       sphereData[i*9+3]= x2;
+    //       sphereData[i*9+4]= y2;
+    //       sphereData[i*9+5]= z2;
+    //       sphereData[i*9+6]= x3;
+    //       sphereData[i*9+7]= y3;
+    //       sphereData[i*9+8]= z3;
+    //    }
 
-    int Band_Power = 4;  // 2^Band_Power = Total Points in a band.
-    int Band_Points = 16; // 16; = 2^Band_Power
-    int Band_Mask = (Band_Points-2);
-    float Sections_In_Band = ((Band_Points/2)-1);
-    float Total_Points = (Sections_In_Band*Band_Points) ;
-    float Section_Arc = (6.28/Sections_In_Band);
-    const float R = radius; // radius of 10
-
-    int i;
-    float x_angle;
-    float y_angle;
-
-    for (i=0;i<Total_Points;i++)
-    {
-        x_angle=(float)(i&1)+(i>>Band_Power);
-        y_angle=(float)((i&Band_Mask)>>1)+((i>>Band_Power)*(Sections_In_Band));
-
-        x_angle*=(float)Section_Arc/2.0f; // remember - 180� x rot not 360
-        y_angle*=(float)Section_Arc*-1;
-
-        circleData[i*3]= R*sin(x_angle)*sin(y_angle);
-        circleData[i*3+1] = R*cos(x_angle);
-        circleData[i*3+2] = R*sin(x_angle)*cos(y_angle);
-
-        printf("[%f,%f,%f],\n",circleData[i*3],circleData[i*3+1],circleData[i*3+2]);
-
-
+    int degrees = 5; // degrees of rotation
+    float x, y, z;
+    int vertex = 0;
+    float convert = M_PI/180;
+    for ( int ph2 = -90; ph2 < 90; ph2 += degrees ) {
+        float phi =  M_PI/180*ph2;
+        for ( int th2 = 0; th2 <= 360; th2 += degrees*2 ) {
+            float theta = convert*th2;
+            x = radius*sin( theta ) * cos( phi );
+            y = radius*cos( theta ) * cos( phi );
+            z = radius*sin( phi );
+            sphereData[vertex] = x;
+            sphereData[vertex + 1] = y;
+            sphereData[vertex + 2] = z;
+            x = radius*sin( theta ) * cos( convert*(ph2 + degrees) );
+            y = radius*cos( theta ) * cos( convert*(ph2 + degrees) );
+            z = radius*sin( convert*(ph2 + degrees) );
+            sphereData[vertex + 3] = x;
+            sphereData[vertex + 4] = y;
+            sphereData[vertex + 5] = z;
+            vertex += 6;
+        }
     }
-    std::cout<<i<<endl;
-*/
-
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 1, 0))
     mVertexArrayObject.create();
@@ -162,6 +247,9 @@ void Viewer::initializeGL() {
 
     mCircleBufferObject.create();
     mCircleBufferObject.setUsagePattern(QOpenGLBuffer::StaticDraw);
+
+    mSphereBufferObject.create();
+    mSphereBufferObject.setUsagePattern(QOpenGLBuffer::StaticDraw);
 #else 
     /*
      * if qt version is less than 5.1, use the following commented code
@@ -184,31 +272,53 @@ void Viewer::initializeGL() {
 
     mCircleBufferObject.create();
     mCircleBufferObject.setUsagePattern(QGLBuffer::StaticDraw);
+    mSphereBufferObject.create();
+    mSphereBufferObject.setUsagePattern(QOpenGLBuffer::StaticDraw);
 #endif
 
-    if (!mCircleBufferObject.bind()) {
+    //    if (!mCircleBufferObject.bind()) {
+    //        std::cerr << "could not bind vertex buffer to the context." << std::endl;
+    //        return;
+    //    }
+
+    if (!mSphereBufferObject.bind()) {
         std::cerr << "could not bind vertex buffer to the context." << std::endl;
         return;
     }
 
-    mCircleBufferObject.allocate(circleData, 40 * 3 * sizeof(float));
-
     mProgram.bind();
+    //    mCircleBufferObject.allocate(circleData, 40*3 * sizeof(float));
+    mSphereBufferObject.allocate(sphereData, 36*37*6* sizeof(float));
 
     mProgram.enableAttributeArray("vert");
     mProgram.setAttributeBuffer("vert", GL_FLOAT, 0, 3);
 
     mMvpMatrixLocation = mProgram.uniformLocation("mvpMatrix");
     mColorLocation = mProgram.uniformLocation("frag_color");
+
+
+
 }
 
 void Viewer::paintGL() {
     // Clear framebuffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Set up lighting
+    if ( zBuffer )
+    {
+        glEnable( GL_DEPTH_TEST );
+        glDepthMask( GL_TRUE );
+    }
+    else glDisable( GL_DEPTH_TEST );
 
-    // Draw stuff
+    if ( backFace || frontFace)
+    {
+        glEnable( GL_CULL_FACE );
+        if ( backFace && frontFace  ) glCullFace( GL_FRONT_AND_BACK );
+        else if ( backFace ) glCullFace( GL_BACK );
+        else if ( frontFace ) glCullFace( GL_FRONT );
+    }
+    else glDisable( GL_CULL_FACE );
 
     draw_trackball_circle();
     QMatrix4x4 temp;
@@ -236,10 +346,32 @@ void Viewer::mousePressEvent ( QMouseEvent * event ) {
     buttonPressed = event->button();
     prev_x = event->x();
     prev_y = event->y();
+    if(buttonPressed == 4){
+        MMB = true;
+    }else if(buttonPressed == 2){
+        RMB = true;
+    }
+
+    if(joints){
+        std::vector<SceneNode*> storeNodes;
+        for(int i = 0; i < selectedNodes.size(); i++){
+            selectedNodes[i]->storeUndo();
+            storeNodes.push_back(selectedNodes[i]);
+        }
+        if(storeNodes.size()>0){
+            undoNodes.push_back(storeNodes);
+        }
+    }
 }
 
 void Viewer::mouseReleaseEvent ( QMouseEvent * event ) {
     std::cerr << "Stub: button " << event->button() << " released\n";
+
+    if(event->button() == 4){
+        MMB = false;
+    }else if(event->button() == 2){
+        RMB = false;
+    }
 }
 
 void Viewer::mouseMoveEvent ( QMouseEvent * event ) {
@@ -247,14 +379,42 @@ void Viewer::mouseMoveEvent ( QMouseEvent * event ) {
     int signx = (event->x() > prev_x) ? 1 : -1;
     int diffy = event->y() - prev_y;
     int signy = (event->y() < prev_y) ? 1 : -1;
-    if(buttonPressed == 1){
-        translateWorld(signx*(abs(diffx)),signy*abs(diffy),0);
-    }
-    else if (buttonPressed == 2){
-        translateWorld(0,0,signy*20);
-    }
-    else if (buttonPressed == 4){
-        rotateWorld(signx*abs(diffx)*.5,0,1,0);
+    int curx = event->x();
+    int cury = event->y();
+    float fVecX,fVecY,fVecZ;
+    if(!joints){
+        if(buttonPressed == 1){
+            translateWorld(signx*(abs(diffx)),signy*abs(diffy),0);
+        }
+        else if (buttonPressed == 4){
+            translateWorld(0,0,signy*20);
+        }
+        else if (buttonPressed == 2){
+            int centerx = width()  / 2;
+            int centery = height() / 2;
+            int diameter;
+            if(width() > height()){
+                diameter = height()/2;
+            }
+            else{
+                diameter = width()/2;
+            }
+
+            vCalcRotVec(curx-centerx,cury-centery,prev_x-centerx,prev_y-centery,diameter,&fVecX,&fVecY,&fVecZ);
+            QMatrix4x4 rot = vAxisRotMatrix(fVecX,-fVecY,fVecZ);
+            mRotationMatrix = mRotationMatrix * rot;
+        }
+    } else{
+        for(int x = 0; x < selectedNodes.size(); x++){
+            //JointNode* myNode = dynamic_cast<JointNode*>(selectedNodes[x]);
+            SceneNode* myNode = selectedNodes[x];
+            if (MMB ){
+                myNode->rotate('x',abs(diffy)*signy*10);
+            }
+            if(RMB && myNode->getName() == "head"){
+                myNode->rotate('y',abs(diffx)*signx*10);
+            }
+        }
     }
 
 
@@ -273,7 +433,7 @@ QMatrix4x4 Viewer::getCameraMatrix() {
 
     vMatrix.lookAt(cameraPosition, QVector3D(0, 0, 0), cameraUpDirection);
 
-    return mPerspMatrix * vMatrix * mTransformMatrix;
+    return mPerspMatrix * vMatrix *mTransformMatrix * mRotationMatrix ;
 }
 
 void Viewer::translateWorld(float x, float y, float z) {
@@ -283,7 +443,7 @@ void Viewer::translateWorld(float x, float y, float z) {
 
 void Viewer::rotateWorld(float angle, float x, float y, float z) {
     // Todo: Ask if we want to keep this.
-    mTransformMatrix.rotate(angle, x, y, z);
+    mRotationMatrix.rotate(angle, x, y, z);
 }
 
 void Viewer::scaleWorld(float x, float y, float z) {
@@ -317,11 +477,12 @@ void Viewer::draw_trackball_circle()
     transformMatrix.translate(width()/2.0, height()/2.0, 0.0);
 
     // Bind buffer object
-    mCircleBufferObject.bind();
-    mProgram.setUniformValue(mMvpMatrixLocation, orthoMatrix * transformMatrix);
+    //    mCircleBufferObject.allocate(circleData, 40 * 3 * sizeof(float));
+    //    mCircleBufferObject.bind();
+    //    mProgram.setUniformValue(mMvpMatrixLocation, orthoMatrix * transformMatrix);
 
     // Draw buffer
-    glDrawArrays(GL_LINE_LOOP, 0, 40);
+    //    glDrawArrays(GL_LINE_LOOP, 0, 40);
 
 }
 
@@ -356,10 +517,10 @@ void Viewer::draw_trackball_circle()
  *                    is proportional to the angle of rotation.
  *
  *******************************************************/
-void vCalcRotVec(float fNewX, float fNewY,
-                 float fOldX, float fOldY,
-                 float fDiameter,
-                 float *fVecX, float *fVecY, float *fVecZ) {
+void Viewer::vCalcRotVec(float fNewX, float fNewY,
+                         float fOldX, float fOldY,
+                         float fDiameter,
+                         float *fVecX, float *fVecY, float *fVecZ) {
     long  nXOrigin, nYOrigin;
     float fNewVecX, fNewVecY, fNewVecZ,        /* Vector corresponding to new mouse location */
             fOldVecX, fOldVecY, fOldVecZ,        /* Vector corresponding to old mouse location */
@@ -433,7 +594,7 @@ void vCalcRotVec(float fNewX, float fNewY,
  *                       0,1, and 2).
  *
  *******************************************************/
-QMatrix4x4 vAxisRotMatrix(float fVecX, float fVecY, float fVecZ) {
+QMatrix4x4 Viewer::vAxisRotMatrix(float fVecX, float fVecY, float fVecZ) {
     float fRadians, fInvLength, fNewVecX, fNewVecY, fNewVecZ;
 
     /* Find the length of the vector which is the angle of rotation
@@ -488,5 +649,26 @@ QMatrix4x4 vAxisRotMatrix(float fVecX, float fVecY, float fVecZ) {
 
 
     return mNewMat;
+}
+
+void Viewer::updateSelectedNodes()
+{
+    if(!joints) return;
+    selectedNodes.clear();
+    if(leftUpperArm)selectedNodes.push_back  ( m_root->findNode("leftUpperArm"));
+    if(leftLowerArm)selectedNodes.push_back  ( m_root->findNode("leftLowerArm"));
+    if(leftHand)selectedNodes.push_back      ( m_root->findNode("leftHand"));
+    if(leftUpperLeg)selectedNodes.push_back  ( m_root->findNode("leftUpperLeg"));
+    if(leftLowerLeg)selectedNodes.push_back  ( m_root->findNode("leftLowerLeg"));
+    if(leftFoot)selectedNodes.push_back      ( m_root->findNode("leftFoot"));
+    if(rightUpperArm)selectedNodes.push_back ( m_root->findNode("rightUpperArm"));
+    if(rightLowerArm)selectedNodes.push_back ( m_root->findNode("rightLowerArm"));
+    if(rightHand)selectedNodes.push_back     ( m_root->findNode("rightHand"));
+    if(rightUpperLeg)selectedNodes.push_back ( m_root->findNode("rightUpperLeg"));
+    if(rightLowerLeg)selectedNodes.push_back ( m_root->findNode("rightLowerLeg"));
+    if(rightFoot)selectedNodes.push_back     ( m_root->findNode("rightFoot"));
+    if(neck)selectedNodes.push_back          ( m_root->findNode("neck"));
+    if(head)selectedNodes.push_back          ( m_root->findNode("head"));
+    update();
 }
 

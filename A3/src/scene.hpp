@@ -20,7 +20,10 @@ public:
 
   const QMatrix4x4& get_transform() const { return m_trans; }
   const QMatrix4x4& get_inverse() const { return m_invtrans; }
+  SceneNode* findNode(std::string name);
   std::vector<Matrix4x4> matStack;
+
+  QMatrix4x4 m_resetTrans;
   
   void set_transform(const QMatrix4x4& m)
   {
@@ -48,6 +51,14 @@ public:
       m_viewer = viewer;
   }
 
+  int getId(){
+      return m_id;
+  }
+
+  std::string getName(){
+      return m_name;
+  }
+
   // Callbacks to be implemented.
   // These will be called from Lua.
   void rotate(char axis, double angle);
@@ -56,6 +67,18 @@ public:
 
   // Returns true if and only if this node is a JointNode
   virtual bool is_joint() const;
+
+  std::vector<QMatrix4x4> undoStack;
+  std::vector<QMatrix4x4> redoStack;
+
+  void storeUndo();
+  void storeRedo();
+  void undo();
+  void redo();
+  void resetInitTrans();
+  void reset();
+  void resetInitRecurse();
+  void resetRecurse();
   
 protected:
   
@@ -84,14 +107,20 @@ public:
   void set_joint_x(double min, double init, double max);
   void set_joint_y(double min, double init, double max);
 
+  void rotate(char axis, double angle);
+
+  float curXangle;
+  float curYangle;
+
+
   struct JointRange {
     double min, init, max;
   };
 
-  
-protected:
-
   JointRange m_joint_x, m_joint_y;
+  
+private:
+
 };
 
 class GeometryNode : public SceneNode {
@@ -109,6 +138,8 @@ public:
   {
     m_material = material;
   }
+
+
 
 protected:
   Material* m_material;

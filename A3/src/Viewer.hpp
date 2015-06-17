@@ -6,6 +6,7 @@
 #include <QMatrix4x4>
 #include <QtGlobal>
 #include "scene.hpp"
+#include <vector>
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 1, 0))
 #include <QOpenGLBuffer>
@@ -17,6 +18,7 @@
 #endif
 
 class SceneNode;
+class JointNode;
 
 class Viewer : public QGLWidget {
     
@@ -25,16 +27,56 @@ class Viewer : public QGLWidget {
 public:
     Viewer(const QGLFormat& format, QWidget *parent = 0);
     virtual ~Viewer();
-    
+    bool picking;
+    bool joints;
+    bool PO;
+
+    bool backFace;
+    bool frontFace;
+    bool zBuffer;
+    bool circle;
+
+
+    bool leftUpperArm ;
+    bool leftLowerArm;
+    bool leftHand;
+    bool leftUpperLeg;
+    bool leftLowerLeg;
+    bool leftFoot;
+    bool rightUpperArm;
+    bool rightLowerArm;
+    bool rightHand;
+    bool rightUpperLeg;
+    bool rightLowerLeg;
+    bool rightFoot;
+    bool neck;
+    bool head;
+    std::vector<SceneNode*> selectedNodes;
+    std::vector< std::vector<SceneNode*> > undoNodes;
+    std::vector< std::vector<SceneNode*> > redoNodes;
+
+    bool MMB;
+    bool RMB;
+
+
+    void undo();
+    void redo();
+    void resetJoints();
+    void resetAll();
+    void resetPos();
+    void resetRot();
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
     void setSceneNode(SceneNode* node);
 
-    void drawCircle(QColor color, QMatrix4x4 trans);
+    void drawSphere(QColor color, QMatrix4x4 trans, std::string name);
+
+//    JointNode* curNode;
 
     // If you want to render a new frame, call do not call paintGL(),
     // instead, call update() to ensure that the view gets a paint 
     // event.
+    void updateSelectedNodes();
   
 protected:
 
@@ -72,6 +114,9 @@ private:
     QMatrix4x4 vAxisRotMatrix(float fVecX, float fVecY, float fVecZ);
 
 
+
+
+
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 1, 0))
     QOpenGLBuffer mCircleBufferObject;
     QOpenGLBuffer mSphereBufferObject;
@@ -85,9 +130,13 @@ private:
     int buttonPressed;
     int prev_x;
     int prev_y;
+    float circleData[40*3];
+    float sphereData[36*37*6];
     QMatrix4x4 mPerspMatrix;
+    QMatrix4x4 mRotationMatrix;
     QMatrix4x4 mTransformMatrix;
     QGLShaderProgram mProgram;
+
 
     SceneNode* m_root;
 };

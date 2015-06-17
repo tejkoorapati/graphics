@@ -20,3 +20,8 @@ void PhongMaterial::apply_gl() const
     glEnable ( GL_LIGHTING );
     glEnable ( GL_LIGHT1 );
 }
+
+Colour PhongMaterial::getColor() const
+{
+    return m_kd;
+}

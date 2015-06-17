@@ -8,7 +8,8 @@ Sphere::~Sphere()
 {
 }
 
-void Sphere::walk_gl(Viewer* viewer, QMatrix4x4 trans) const
+void Sphere::walk_gl(Viewer* viewer, QMatrix4x4 trans, Colour color, std::string name) const
 {
-  viewer->drawCircle(QColor(Qt::GlobalColor::blue),trans);
+
+  viewer->drawSphere(QColor(color.R(),color.G(),color.B()),trans, name);
 }
