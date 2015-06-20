@@ -1,0 +1,13 @@
+INPUT(
+./debug\algebra.o
+./debug\main.o
+./debug\material.o
+./debug\primitive.o
+./debug\scene.o
+./debug\scene_lua.o
+./debug\mesh.o
+./debug\polyroots.o
+./debug\image.o
+./debug\light.o
+./debug\a4.o
+);

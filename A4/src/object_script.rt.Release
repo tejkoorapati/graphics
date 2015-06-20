@@ -1,0 +1,13 @@
+INPUT(
+./release\algebra.o
+./release\main.o
+./release\material.o
+./release\primitive.o
+./release\scene.o
+./release\scene_lua.o
+./release\mesh.o
+./release\polyroots.o
+./release\image.o
+./release\light.o
+./release\a4.o
+);
