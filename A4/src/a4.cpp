@@ -39,8 +39,7 @@ void a4_render(// What to render
       // Green: increasing from left to right
       img(x, y, 1) = (double)x / width;
       // Blue: in lower-left and upper-right corners
-      img(x, y, 2) = ((y < height/2 && x < height/2)
-                      || (y >= height/2 && x >= height/2)) ? 1.0 : 0.0;
+      img(x, y, 2) = ((y < height/2 && x < height/2) || (y >= height/2 && x >= height/2)) ? 1.0 : 0.0;
     }
   }
   img.savePng(filename);

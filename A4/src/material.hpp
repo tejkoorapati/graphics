@@ -3,6 +3,8 @@
 
 #include "algebra.hpp"
 
+class Colour;
+
 class Material {
 public:
   virtual ~Material();
@@ -18,14 +20,12 @@ class PhongMaterial : public Material {
 public:
   PhongMaterial(const Colour& kd, const Colour& ks, double shininess);
   virtual ~PhongMaterial();
-
   virtual void apply_gl() const;
 
-private:
   Colour m_kd;
   Colour m_ks;
-
   double m_shininess;
+
 };
 
 

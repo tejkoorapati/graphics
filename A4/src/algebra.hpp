@@ -23,6 +23,8 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+class Material;
+
 class Point2D
 {
 public:
@@ -173,6 +175,11 @@ private:
 };
 
 inline Vector3D operator *(double s, const Vector3D& v)
+{
+  return Vector3D(s*v[0], s*v[1], s*v[2]);
+}
+
+inline Vector3D operator *( const Vector3D& v,double s)
 {
   return Vector3D(s*v[0], s*v[1], s*v[2]);
 }
@@ -486,5 +493,19 @@ inline std::ostream& operator <<(std::ostream& os, const Colour& c)
 {
   return os << "c<" << c.R() << "," << c.G() << "," << c.B() << ">";
 }
+
+struct Ray{
+
+    Point3D origin;
+    Vector3D direction;
+};
+
+struct Intersection{
+    bool valid;
+    double t0;
+    double t1;
+    Point3D location;
+    Vector3D normal;
+};
 
 #endif // CS488_ALGEBRA_HPP

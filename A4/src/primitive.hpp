@@ -6,17 +6,9 @@
 class Primitive {
 public:
   virtual ~Primitive();
+  virtual Intersection calcInterection(Ray ray);
 };
 
-class Sphere : public Primitive {
-public:
-  virtual ~Sphere();
-};
-
-class Cube : public Primitive {
-public:
-  virtual ~Cube();
-};
 
 class NonhierSphere : public Primitive {
 public:
@@ -24,6 +16,7 @@ public:
     : m_pos(pos), m_radius(radius)
   {
   }
+  Intersection calcInterection(Ray ray);
   virtual ~NonhierSphere();
 
 private:
@@ -33,16 +26,34 @@ private:
 
 class NonhierBox : public Primitive {
 public:
-  NonhierBox(const Point3D& pos, double size)
-    : m_pos(pos), m_size(size)
-  {
-  }
+  NonhierBox(const Point3D& pos, double size);
+  Intersection calcInterection(Ray ray);
   
   virtual ~NonhierBox();
+  std::vector<std::vector<int> > m_faces;
+  std::vector<Point3D> m_verts;
+  Point3D minBound;
+  Point3D maxBound;
 
 private:
   Point3D m_pos;
   double m_size;
 };
 
+class Sphere : public Primitive {
+public:
+  Sphere();
+  virtual ~Sphere();
+  virtual Intersection calcInterection(Ray ray);
+
+private:
+   NonhierSphere* m_sphere;
+};
+
+class Cube : public Primitive {
+public:
+  Cube();
+  NonhierBox* m_cube;
+  virtual ~Cube();
+};
 #endif
