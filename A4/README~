@@ -1,0 +1,22 @@
+Name: Srushti Koorapati
+Student Number: 20389553 
+User-id: skoorapa
+Assignment: 4
+
+The final executable was compiled on this machine: gl07
+
+How to invoke my program: ./rt <filename> (defaults to sample.lua)
+
+
+How to use my extra features: Anti-aliasing has been implemented. There is no switch, it's on by default.
+
+
+I have created the following data files, which are in the data directory: There are no data files.
+
+
+My program assumes the following of the user interaction. Violating these assumptions might cause the program to fail.
+- The program is executed on a ubuntu OS.
+- The host is not a virtual machine. (I could not run program properly on my Virtual OS)
+- The graphics card supports GSLS 3.30
+- The user interacts only with the mouse and keyboard. (not other peripherals that are mapped to the same keys)
+- The shader files are moved with the program and are in the same directory.

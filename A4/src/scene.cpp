@@ -38,7 +38,7 @@ Intersection SceneNode::calcIntersection(Ray ray)
 
 void SceneNode::rotate(char axis, double angle)
 {
-    std::cerr << "Stub: Rotate " << m_name << " around " << axis << " by " << angle << std::endl;
+   // std::cerr << "Stub: Rotate " << m_name << " around " << axis << " by " << angle << std::endl;
     Matrix4x4 r;
 
     //code from a2
@@ -75,7 +75,7 @@ void SceneNode::rotate(char axis, double angle)
 
 void SceneNode::scale(const Vector3D& amount)
 {
-    std::cerr << "Stub: Scale " << m_name << " by " << amount << std::endl;
+   // std::cerr << "Stub: Scale " << m_name << " by " << amount << std::endl;
     //code from a2
     Matrix4x4 s;
     Vector4D r1(amount[0], 0, 0, 0);
@@ -90,7 +90,7 @@ void SceneNode::scale(const Vector3D& amount)
 
 void SceneNode::translate(const Vector3D& amount)
 {
-    std::cerr << "Stub: Translate " << m_name << " by " << amount << std::endl;
+   // std::cerr << "Stub: Translate " << m_name << " by " << amount << std::endl;
     //code from a2
     Matrix4x4 t;
     Vector4D r1(1, 0, 0, amount[0]);

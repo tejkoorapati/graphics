@@ -15,7 +15,7 @@ class AppWindow : public QMainWindow
 
 public:
     AppWindow();
-    setSceneNode(SceneNode* node);
+    void setSceneNode(SceneNode* node);
 protected:
     void keyPressEvent(QKeyEvent *event);
 

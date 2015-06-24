@@ -12,7 +12,6 @@ Sphere::Sphere() {
     m_sphere = new NonhierSphere(Point3D(0, 0, 0), 1);
 }
 
-
 Sphere::~Sphere() {
     delete m_sphere;
 }
@@ -54,7 +53,6 @@ Intersection NonhierSphere::calcInterection(Ray ray) {
     double a =  pow(Xd, 2) + pow(Yd, 2) + pow(Zd, 2);
     double b = 2 * (ray.origin - m_pos).dot(ray.direction);
     double c = (ray.origin - m_pos).dot(ray.origin - m_pos) - pow(m_radius, 2);
-//quad formula
 
     double roots[2];
     int numRoots = quadraticRoots(a, b, c, roots);
@@ -63,7 +61,6 @@ Intersection NonhierSphere::calcInterection(Ray ray) {
 
     if(numRoots == 1)
         t = roots[0];
-
 
     else if(numRoots == 2) {
         if(roots[0] < roots[1])
@@ -82,11 +79,7 @@ Intersection NonhierSphere::calcInterection(Ray ray) {
         intersection.valid = true;
     }
 
-
     return intersection;
-
-
-
 }
 
 NonhierBox::NonhierBox(const Point3D &pos, double size)
@@ -145,7 +138,6 @@ Intersection NonhierBox::calcInterection(Ray ray) {
             return intersection;
     }
 
-//TODO: need to find the normal;
     double t = tnear - 0.1f;
     intersection.t1 = tfar + 0.1f;
     intersection.t0 = t;

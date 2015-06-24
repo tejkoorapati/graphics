@@ -47,6 +47,23 @@ void SceneNode::rotate(char axis, double angle)
 
     JointNode* myNode = dynamic_cast<JointNode*>(this);
 
+    if(myNode == NULL){
+        switch(axis){
+
+        case 'x':
+
+            temp.rotate(angle,1,0,0);
+            break;
+        case 'y':
+            temp.rotate(angle,0,1,0);
+            break;
+        case 'z' :
+            temp.rotate(angle,0,0,1);
+            break;
+        }
+            return;
+    }
+
     switch(axis){
 
     case 'x':

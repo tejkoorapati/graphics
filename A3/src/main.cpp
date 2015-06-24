@@ -17,7 +17,7 @@ int main(int argc, char** argv)
     // This is how you might import a scene
     SceneNode* root = import_lua(filename);
     if (!root) {
-        //std::cerr << "Could not open " << filename << std::endl;
+        std::cerr << "Could not open " << filename << std::endl;
         return 1;
     }
  

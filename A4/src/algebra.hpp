@@ -22,8 +22,14 @@
 #include <assert.h>
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
+#endif
+#ifndef M_MAX
 #define M_MAX std::numeric_limits<double>::max()
+#endif
+#ifndef M_MIN
 #define M_MIN std::numeric_limits<double>::min()
+#endif
+#ifndef M_EPS
 #define M_EPS std::numeric_limits<double>::epsilon()
 #endif
 

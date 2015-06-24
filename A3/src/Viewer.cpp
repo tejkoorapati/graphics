@@ -142,6 +142,7 @@ void Viewer::drawSphere(QColor color, QMatrix4x4 trans, std::string name)
     mProgram.setUniformValue(mMvpMatrixLocation, getCameraMatrix()* trans);
     mSphereBufferObject.allocate(sphereData, 36*37*6* sizeof(float));
     mSphereBufferObject.bind();
+    mProgram.bind();
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 36*37*6);
 
 }
@@ -290,8 +291,8 @@ void Viewer::paintGL() {
     temp.setToIdentity();
     //    drawCircle(QColor(Qt::GlobalColor::green),temp);
 
-    m_root->walk_gl(false,this);
     if(circle)draw_trackball_circle();
+    m_root->walk_gl(false,this);
 }
 
 void Viewer::resizeGL(int width, int height) {
@@ -448,6 +449,8 @@ void Viewer::draw_trackball_circle()
 
     //     Draw buffer
     glDrawArrays(GL_LINE_LOOP, 0, 40);
+    mCircleBufferObject.allocate(circleData, 40 * 3 * sizeof(float));
+    mCircleBufferObject.release();
 
 }
 
@@ -461,7 +464,7 @@ void Viewer::draw_trackball_circle()
  *
  *    Calculates a rotation vector based on mouse motion over
  *    a virtual trackball.
- *
+ *Viewer::draw_trackball_circle
  *    The fNew and fOld mouse positions
  *    should be in 'trackball' space. That is, they have been
  *    transformed into a coordinate system centered at the middle

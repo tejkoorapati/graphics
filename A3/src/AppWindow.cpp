@@ -3,7 +3,7 @@
 #include "AppWindow.hpp"
 
 AppWindow::AppWindow() {
-    setWindowTitle("488 Assignment Two");
+    setWindowTitle("488 Assignment Three");
 
     QGLFormat glFormat;
     glFormat.setVersion(3,3);
@@ -20,7 +20,7 @@ AppWindow::AppWindow() {
     createMenu();
 }
 
-AppWindow::setSceneNode(SceneNode *node)
+void AppWindow::setSceneNode(SceneNode *node)
 {
     m_viewer->setSceneNode(node);
     node->setViewer(m_viewer);
