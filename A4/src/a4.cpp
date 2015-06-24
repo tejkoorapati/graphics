@@ -125,7 +125,7 @@ void a4_render(SceneNode* root,
             ray.direction = (x / width * 2 - 1) * tan(fov) * (width / height) * m_side + (y / height * 2 - 1) * tan(fov) * -m_up + m_view;
             ray.direction.normalize();
             Intersection intersection = root->calcIntersection(ray);
-            Colour finalColor(0, 0, y / (height / 2));
+            Colour pixelColor(.3, .3,  y / (height / 2));
 
             if(intersection.valid) {
                 Vector3D intersectionDirection = -ray.direction;
@@ -162,18 +162,18 @@ void a4_render(SceneNode* root,
                     }
                 }
 
-                finalColor = (specular  + diffuse + ambient) * matDiff;
+                pixelColor = (specular  + diffuse + ambient) * matDiff;
             }
 
-            img(x, y, 0) = finalColor.R();
-            img(x, y, 1) = finalColor.G();
-            img(x, y, 2) = finalColor.B();
+            img(x, y, 0) = pixelColor.R();
+            img(x, y, 1) = pixelColor.G();
+            img(x, y, 2) = pixelColor.B();
         }
 
         count++;
 
         if(count % 2 == 0)
-            std::cerr << "Progress: " << (int)((y * 100) / height) << "% \n";
+            std::cerr << "Progress: " << ((y * 100) / height) << "% \n";
     }
 
     // Save the final file

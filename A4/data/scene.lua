@@ -2,7 +2,7 @@
 -- around Stonehenge.  "Assume that cows are spheres..."
 
 stone = gr.material({0.8, 0.7, 0.7}, {0.0, 0.0, 0.0}, 0)
-grass = gr.material({0.1, 0.7, 0.1}, {0.0, 0.0, 0.0}, 0)
+grass = gr.material({0.1, 0.7, 0.1}, {.7, 0.7, 0.7}, 5)
 hide = gr.material({0.84, 0.6, 0.53}, {0.3, 0.3, 0.3}, 20)
 mat1 = gr.material({0.7, 0.7, 0.7}, {1, 1, 1}, 100)
 pond = gr.material({0, 0, 0.7}, {1, 1, 1}, 100)
@@ -58,12 +58,11 @@ scene = gr.node('scene')
 scene:rotate('X', 20)
 scene:translate(0,0,1)
 
--- the floor
 
 plane = gr.mesh('plane', {
 	{ -1, 0, -1 }, 
 	{  1, 0, -1 }, 
-	{  1,  0, 1 }, 
+	{  1, 0, 1 }, 
 	{ -1, 0, 1  }
 	}, {
 	{3, 2, 1, 0}
@@ -72,32 +71,11 @@ scene:add_child(plane)
 plane:set_material(grass)
 plane:scale(10, 10, 10)
 
--- Construct a central altar in the shape of a buckyball.  The
--- buckyball at the centre of the real Stonehenge was destroyed
--- in the great fire of 733 AD.
 pondNode = gr.nh_sphere('pond', {0, 0, 0}, 1)
 scene:add_child(pondNode)
 pondNode:set_material(pond)
 pondNode:scale(3, 0.1, 3)
 
--- Use the instanced cow model to place some actual cows in the scene.
--- For convenience, do this in a loop.
-
-cow_number = 1
-
--- for _, pt in pairs({
--- 	{{1,1.3,14}, 20},
--- 	{{5,1.3,-11}, 180},
--- 	{{-5.5,1.3,-3}, -60}}) do
--- cow_instance = gr.node('cow' .. tostring(cow_number))
--- scene:add_child(cow_instance)
--- cow_instance:add_child(cow)
--- cow_instance:translate(unpack(pt[1]))
--- cow_instance:rotate('Y', pt[2])
--- cow_instance:scale(1.4, 1.4, 1.4)
-
--- cow_number = cow_number + 1
--- end
 
 cow1 = gr.node('cow1')
 cow1:add_child(cow)
