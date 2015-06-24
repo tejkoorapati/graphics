@@ -141,3 +141,11 @@ Matrix4x4 Matrix4x4::invert() const
 
   return ret;
 }
+
+Vector3D pToV(Point3D point){
+    return (Vector3D(point[0],point[1],point[2]));
+}
+
+Point3D vtoP(Vector3D vec){
+    return (Point3D(vec[0],vec[1],vec[2]));
+}

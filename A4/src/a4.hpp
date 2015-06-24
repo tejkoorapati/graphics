@@ -5,6 +5,8 @@
 #include "algebra.hpp"
 #include "scene.hpp"
 #include "light.hpp"
+#include "material.hpp"
+#include "image.hpp"
 
 void a4_render(// What to render
                SceneNode* root,
@@ -19,5 +21,9 @@ void a4_render(// What to render
                const Colour& ambient,
                const std::list<Light*>& lights
                );
+
+double distanceBetween(Point3D a, Point3D b);
+
+void antiAliasing (Image &img);
 
 #endif

@@ -18,9 +18,13 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
-
+#include <polyroots.hpp>
+#include <assert.h>
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
+#define M_MAX std::numeric_limits<double>::max()
+#define M_MIN std::numeric_limits<double>::min()
+#define M_EPS std::numeric_limits<double>::epsilon()
 #endif
 
 class Material;
@@ -93,6 +97,7 @@ public:
     v_[2] = other.v_[2];
     return *this;
   }
+
 
   double& operator[](size_t idx) 
   {
@@ -494,6 +499,11 @@ inline std::ostream& operator <<(std::ostream& os, const Colour& c)
   return os << "c<" << c.R() << "," << c.G() << "," << c.B() << ">";
 }
 
+
+Vector3D pToV(Point3D point);
+
+Point3D vtoP(Vector3D vec);
+
 struct Ray{
 
     Point3D origin;
@@ -506,6 +516,7 @@ struct Intersection{
     double t1;
     Point3D location;
     Vector3D normal;
+    Material* material;
 };
 
 #endif // CS488_ALGEBRA_HPP

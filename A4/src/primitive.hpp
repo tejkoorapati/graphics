@@ -30,10 +30,8 @@ public:
   Intersection calcInterection(Ray ray);
   
   virtual ~NonhierBox();
-  std::vector<std::vector<int> > m_faces;
   std::vector<Point3D> m_verts;
-  Point3D minBound;
-  Point3D maxBound;
+
 
 private:
   Point3D m_pos;

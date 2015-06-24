@@ -13,6 +13,8 @@ public:
 
   const Matrix4x4& get_transform() const { return m_trans; }
   const Matrix4x4& get_inverse() const { return m_invtrans; }
+
+  virtual Intersection calcIntersection(Ray ray);
   
   void set_transform(const Matrix4x4& m)
   {
@@ -88,6 +90,8 @@ public:
 
   const Material* get_material() const;
   Material* get_material();
+  Intersection calcIntersection(Ray ray);
+
 
   void set_material(Material* material)
   {

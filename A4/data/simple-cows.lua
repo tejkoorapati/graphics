@@ -90,26 +90,26 @@ buckyball:scale(1.5, 1.5, 1.5)
 cow_number = 1
 
 for _, pt in pairs({
-		      {{1,1.3,14}, 20},
-		      {{5,1.3,-11}, 180},
-		      {{-5.5,1.3,-3}, -60}}) do
-   cow_instance = gr.node('cow' .. tostring(cow_number))
-   scene:add_child(cow_instance)
-   cow_instance:add_child(cow)
-   cow_instance:translate(unpack(pt[1]))
-   cow_instance:rotate('Y', pt[2])
-   cow_instance:scale(1.4, 1.4, 1.4)
-   
-   cow_number = cow_number + 1
+	{{1,1.3,14}, 20},
+	{{5,1.3,-11}, 180},
+	{{-5.5,1.3,-3}, -60}}) do
+cow_instance = gr.node('cow' .. tostring(cow_number))
+scene:add_child(cow_instance)
+cow_instance:add_child(cow)
+cow_instance:translate(unpack(pt[1]))
+cow_instance:rotate('Y', pt[2])
+cow_instance:scale(1.4, 1.4, 1.4)
+
+cow_number = cow_number + 1
 end
 
 -- Place a ring of arches.
 
 for i = 1, 6 do
-   an_arc = gr.node('arc' .. tostring(i))
-   an_arc:rotate('Y', (i-1) * 60)
-   scene:add_child(an_arc)
-   an_arc:add_child(arc)
+	an_arc = gr.node('arc' .. tostring(i))
+	an_arc:rotate('Y', (i-1) * 60)
+	scene:add_child(an_arc)
+	an_arc:add_child(arc)
 end
 
 gr.render(scene,
