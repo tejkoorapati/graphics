@@ -5,17 +5,17 @@
 QT += opengl widgets
 CONFIG += c++11
 QMAKE_CXXFLAGS += -W -Wall -g
-LIBS += -lGLU
+#LIBS += -lGLU
 TEMPLATE = app
 TARGET = a2
 INCLUDEPATH += .
 
 # Input
 HEADERS += AppWindow.hpp Viewer.hpp \ 
-    algebra.hpp a2.hpp
+algebra.hpp a2.hpp
 SOURCES += main.cpp AppWindow.cpp Viewer.cpp \ 
-    algebra.cpp a2.cpp
+algebra.cpp a2.cpp
 
 DISTFILES += \
-    shader.frag \
-    shader.vert
+shader.frag \
+shader.vert
