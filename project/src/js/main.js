@@ -23,7 +23,24 @@ var analyser2;
 var frequencyData;
 var baseTree;
 var scene = new THREE.Scene();
+var myTrees = [];
+var cubeAnimationProperties = {
+	moving: false,
+	dir: 0,
+	moveSpeed: 1,
+	progress: 0
+}
 
+
+var treeAnimationTimer = window.setInterval(function() {
+	moveTrees(.1);
+}, 10);
+
+var treeGenTimer = window.setInterval(function() {
+	genTrees();
+}, 1000);
+
+var cubeAnimationTimer;
 
 var renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -40,49 +57,100 @@ loadFloor(20, 95);
 loadCube();
 loadBaseTree();
 loadMusic();
-
-var myTree = makeTree(6, 0);
-var myTree = makeTree(6, 1);
-var myTree = makeTree(6, 2);
-var myTree = makeTree(6, 3);
-var myTree = makeTree(6, 4);
-var myTree = makeTree(5, 0);
-var myTree = makeTree(4, 0);
-var myTree = makeTree(3, 0);
-var myTree = makeTree(2, 0);
-var myTree = makeTree(1, 0);
-var myTree = makeTree(0, 0);
-
-for(i = 0; i < 7; i ++){
-	for (j = 0; j < 5; j++){
-		makeTree(i,j);
-	}
-}
+genTrees();
 
 
 //========================ANIMATE==========================//
 var animate = function() {
 	requestAnimationFrame(animate);
 
-	cube.rotation.y += toRad(1);
 	analyser.getByteFrequencyData(frequencyData);
 
 	camera.position.y = cameraOriginalY;
 	camera.position.y += getVolumeAvgNormalized(frequencyData);
 
 	renderer.render(scene, camera);
-	// moveTree(myTree,-0.1)
-
 
 };
 
-
 animate();
-
-
 
 //========================FUNCTIONS==========================//
 
+
+function startCubeAnimationTimer() {
+	var moveDistance = (floor.width / grid.numCol) /50;
+	cubeAnimationTimer = setInterval(function() {
+		if (cubeAnimationProperties.dir == 1) {
+			cube.position.x += moveDistance;
+		} else if (cubeAnimationProperties.dir == -1) {
+			cube.position.x -= moveDistance;
+		}
+		cubeAnimationProperties.progress += 2;
+		console.log(cubeAnimationProperties.progress);
+		if (cubeAnimationProperties.progress >= 100) {
+			stopCubeAnimationTimer();
+		}
+	}, 1);
+
+}
+
+function stopCubeAnimationTimer() {
+	clearInterval(cubeAnimationTimer);
+	cubeAnimationProperties.moving = false;
+}
+
+function moveCube(dir) {
+	if (cubeAnimationProperties.moving) {
+		return;
+	}
+	cubeAnimationProperties.moving = true;
+	cubeAnimationProperties.dir = dir;
+	cubeAnimationProperties.progress = 0;
+	startCubeAnimationTimer();
+}
+
+function removeTree(i) {
+	scene.remove(myTrees[i].top);
+	scene.remove(myTrees[i].bot);
+	myTrees.splice(i, 1);
+}
+
+function moveTrees(d) {
+
+	size = myTrees.length;
+
+	for (index = 0; index < size; index++) {
+		value = myTrees[index];
+		moveTree(value, d);
+		if (value.bot.position.z > 1) {
+			removeTree(index);
+			index--;
+			size--;
+		}
+	}
+}
+
+function genTrees() {
+	var locs = genRandomArray(0, grid.numCol - 1, 2);
+	for (i = 0; i < locs.length; i++) {
+		myTrees.push(makeTree(0, locs[i]));
+	}
+
+}
+
+
+function genRandomArray(min, max, n) {
+	var arry = [];
+	do {
+		var num = Math.floor(Math.random() * (max + 1 - min)) + min;
+		if (arry.indexOf(num) == -1) {
+			arry.push(num);
+		}
+	} while (arry.length != n);
+
+	return arry;
+}
 
 
 function makeTree(row, col) {
@@ -226,7 +294,7 @@ function loadCube() {
 
 function loadCamera() {
 	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 70);
-	farPlane= 70;
+	farPlane = 70;
 	camera.position.z = 10;
 	camera.position.x = 0;
 	camera.position.y = 6;
@@ -280,7 +348,7 @@ function getVolumeAvgNormalized(buff) {
 	$.each(buff, function(index, value) {
 		sum += value;
 	});
-	return 1.5 * sum / (buff.length * 100);
+	return 3 * sum / (buff.length * 100);
 }
 
 function toRad(a) {
@@ -294,3 +362,15 @@ function getWidth(obj) {
 function getHeight(obj) {
 	return obj.geometry.toJSON().height
 }
+
+document.onkeydown = function(e) {
+	switch (e.keyCode) {
+		case 37:
+		moveCube(-1);
+		break;
+		case 39:
+		moveCube(1);
+		break;
+
+	}
+};
