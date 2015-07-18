@@ -440,4 +440,4 @@ document.onkeydown = function(e) {
 		break;
 
 	}
-};
+}
