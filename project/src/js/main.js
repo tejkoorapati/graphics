@@ -8,6 +8,8 @@ var grid = {
 	cols: []
 }
 
+
+var gameOver = false;
 var camera;
 var farPlane;
 var cameraOriginalY;
@@ -22,8 +24,35 @@ var analyser;
 var analyser2;
 var frequencyData;
 var baseTree;
+var moveSound;
+var dodgeSound;
+var gameOverSound;
 var scene = new THREE.Scene();
+var myTrees = [];
+var cubeAnimationProperties = {
+	moving: false,
+	dir: 0,
+	moveSpeed: 1,
+	progress: 0,
+	curCol: 0
+}
 
+var rowAlt = 0;
+
+
+var treeAnimationTimer = window.setInterval(function() {
+	moveTrees(.1);
+	if (!cubeAnimationProperties.moving) {
+		detectCollision();
+	}
+}, 5);
+
+var treeGenTimer = window.setInterval(function() {
+	genTrees();
+}, 1000);
+
+
+var cubeAnimationTimer;
 
 var renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -39,50 +68,147 @@ loadLight();
 loadFloor(20, 95);
 loadCube();
 loadBaseTree();
-loadMusic();
-
-var myTree = makeTree(6, 0);
-var myTree = makeTree(6, 1);
-var myTree = makeTree(6, 2);
-var myTree = makeTree(6, 3);
-var myTree = makeTree(6, 4);
-var myTree = makeTree(5, 0);
-var myTree = makeTree(4, 0);
-var myTree = makeTree(3, 0);
-var myTree = makeTree(2, 0);
-var myTree = makeTree(1, 0);
-var myTree = makeTree(0, 0);
-
-for(i = 0; i < 7; i ++){
-	for (j = 0; j < 5; j++){
-		makeTree(i,j);
-	}
-}
+loadSounds();
+genTrees();
 
 
 //========================ANIMATE==========================//
 var animate = function() {
+	if (gameOver) {
+		return;
+	}
 	requestAnimationFrame(animate);
 
-	cube.rotation.y += toRad(1);
 	analyser.getByteFrequencyData(frequencyData);
 
 	camera.position.y = cameraOriginalY;
 	camera.position.y += getVolumeAvgNormalized(frequencyData);
 
 	renderer.render(scene, camera);
-	// moveTree(myTree,-0.1)
-
 
 };
 
-
 animate();
-
-
 
 //========================FUNCTIONS==========================//
 
+
+function startCubeAnimationTimer() {
+	var moveDistance = (floor.width / grid.numCol) / 50;
+	cubeAnimationTimer = setInterval(function() {
+		if (cubeAnimationProperties.dir == 1) {
+			cube.position.x += moveDistance;
+		} else if (cubeAnimationProperties.dir == -1) {
+			cube.position.x -= moveDistance;
+		}
+		cubeAnimationProperties.progress += 2;
+		console.log(cubeAnimationProperties.progress);
+		if (cubeAnimationProperties.progress >= 100) {
+			stopCubeAnimationTimer();
+		}
+		detectCollision();
+	}, 1);
+
+}
+
+function stopCubeAnimationTimer() {
+	clearInterval(cubeAnimationTimer);
+	cubeAnimationProperties.moving = false;
+}
+
+function moveCube(dir) {
+	if (cubeAnimationProperties.moving) {
+		return;
+	}
+	if ((dir == 1 && cubeAnimationProperties.curCol == grid.numCol - 1) || (dir == -1 && cubeAnimationProperties.curCol == 0)) {
+		return;
+	}
+	cubeAnimationProperties.moving = true;
+	cubeAnimationProperties.dir = dir;
+	cubeAnimationProperties.curCol += dir;
+	cubeAnimationProperties.progress = 0;
+	moveSound.play();
+	startCubeAnimationTimer();
+}
+
+function removeTree(i) {
+	scene.remove(myTrees[i].top);
+	scene.remove(myTrees[i].bot);
+	var removeTree = myTrees.splice(i, 1);
+	removeTree = null;
+}
+
+function detectCollision() {
+	if (Math.abs(myTrees[0].top.position.z - cube.position.z) >= 1.5) {
+		return;
+	}
+	var rowCheck = myTrees[0].row;
+	var currentRow = rowCheck;
+	var i = 0;
+	while (i < myTrees.length && myTrees[i].row == rowCheck) {
+
+		var tree = myTrees[i].top;
+		cubex = cube.position.x;
+		treex = tree.position.x;
+		if (Math.abs(cubex - treex) < 1.75) {
+			console.log("Distance Between objects " + Math.abs(cubex - treex) + ", index i: " + i);
+			killGame();
+		}
+
+		i++;
+	}
+}
+
+function killGame() {
+	gameOver = true;
+	clearInterval(treeGenTimer);
+	clearInterval(treeAnimationTimer);
+	clearInterval(cubeAnimationTimer);
+	sourceNode.stop();
+	gameOverSound.play();
+
+
+}
+
+
+function moveTrees(d) {
+
+	size = myTrees.length;
+	// console.log(size);
+
+	for (index = 0; index < size; index++) {
+		value = myTrees[index];
+		moveTree(value, d);
+		if (value.bot.position.z > 1) {
+			removeTree(index);
+			index--;
+			size--;
+		}
+	}
+}
+
+function genTrees() {
+	var locs = genRandomArray(0, grid.numCol - 1, 2);
+	for (i = 0; i < locs.length; i++) {
+		myTrees.push(makeTree(0, locs[i]));
+	}
+
+	rowAlt = (rowAlt + 1) % 2;
+
+}
+
+
+function genRandomArray(min, max, n) {
+	var arry = [];
+	do {
+		var num = Math.floor(Math.random() * (max + 1 - min)) + min;
+		if (arry.indexOf(num) == -1) {
+			arry.push(num);
+		}
+	} while (arry.length != n);
+
+	return arry;
+}
 
 
 function makeTree(row, col) {
@@ -102,7 +228,8 @@ function makeTree(row, col) {
 
 	return (newTree = {
 		top: cubeTop,
-		bot: cubeBot
+		bot: cubeBot,
+		row: rowAlt
 	});
 }
 
@@ -210,33 +337,37 @@ function loadCube() {
 
 	var material = new THREE.MeshLambertMaterial();
 	material.map = texture;
-	var geometry = new THREE.BoxGeometry(1, 1, 1);
+	var geometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
 
 	cube = new THREE.Mesh(geometry, material);
+	loadBaseTree
 	cube.overdraw = true;
 	cube.castShadow = true;
 	var offset = 2;
 	var row = grid.numRow;
 	var col = Math.floor(grid.numCol / 2);
-	cube.position.z = -floor.adjustedHeight + ((floor.adjustedHeight / grid.numRow) * row) + offset;
+	cube.position.z = -floor.adjustedHeight + ((floor.adjustedHeight / grid.numRow) * row) + offset - .25;
 	cube.position.x = -floor.adjustedWidth / 2 + ((floor.adjustedWidth / grid.numCol) * col) + offset;
+	cube.position.y += .25;
+
+	cubeAnimationProperties.curCol = col;
 	scene.add(cube);
 
 }
 
 function loadCamera() {
 	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 70);
-	farPlane= 70;
+	farPlane = 70;
 	camera.position.z = 10;
 	camera.position.x = 0;
-	camera.position.y = 6;
+	camera.position.y = 1;
 	camera.rotation.x = toRad(-20);
 
 	cameraOriginalY = camera.position.y;
 
 }
 
-function loadMusic() {
+function loadSounds() {
 
 	getSound('content/music.ogg');
 	context = new AudioContext();
@@ -251,6 +382,10 @@ function loadMusic() {
 	splitter.connect(analyser2, 1);
 	sourceNode.connect(context.destination);
 	frequencyData = new Uint8Array(analyser.frequencyBinCount);
+
+	moveSound = new Audio('content/move.ogg');
+	dodgeSound = new Audio('content/dodge.ogg');
+	gameOverSound = new Audio('content/boom.mp3');
 }
 
 
@@ -280,7 +415,7 @@ function getVolumeAvgNormalized(buff) {
 	$.each(buff, function(index, value) {
 		sum += value;
 	});
-	return 1.5 * sum / (buff.length * 100);
+	return 3 * sum / (buff.length * 100);
 }
 
 function toRad(a) {
@@ -294,3 +429,15 @@ function getWidth(obj) {
 function getHeight(obj) {
 	return obj.geometry.toJSON().height
 }
+
+document.onkeydown = function(e) {
+	switch (e.keyCode) {
+		case 37:
+		moveCube(-1);
+		break;
+		case 39:
+		moveCube(1);
+		break;
+
+	}
+};
