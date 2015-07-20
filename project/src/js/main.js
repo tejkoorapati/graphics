@@ -1,4 +1,4 @@
-//========================LOAD GLOBALS==========================//
+//================================================LOAD GLOBALS==================================================//
 var PI = 3.14159265359;
 
 var grid = {
@@ -8,8 +8,6 @@ var grid = {
 	cols: []
 }
 
-
-var gameOver = false;
 var camera;
 var farPlane;
 var cameraOriginalY;
@@ -17,6 +15,22 @@ var cube;
 var floor;
 var sun;
 var lensFlare;
+var scene = new THREE.Scene();
+var myTrees = [];
+var cubeAnimationProperties = {
+	moving: false,
+	dir: 0,
+	moveSpeed: 1,
+	progress: 0,
+	curCol: 0
+}
+var gameSpeed =1;
+
+var particleSystem;
+var particleCount;
+var particleSystemActivate = false;
+
+
 var context;
 var sourceNode;
 var splitter;
@@ -27,17 +41,33 @@ var baseTree;
 var moveSound;
 var dodgeSound;
 var gameOverSound;
-var scene = new THREE.Scene();
-var myTrees = [];
-var cubeAnimationProperties = {
-	moving: false,
-	dir: 0,
-	moveSpeed: 1,
-	progress: 0,
-	curCol: 0
-}
+var powerUpSound;
+
 
 var rowAlt = 0;
+var gameOver = false;
+
+
+
+
+var cubeAnimationTimer;
+
+var renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+
+
+//================================================LOAD WORLD==================================================//
+
+loadCamera();
+loadSun();
+loadLight();
+loadFloor(20, 95);
+loadCube();
+loadBaseTree();
+loadSounds();
+loadParticleSystem();
 
 
 var treeAnimationTimer = window.setInterval(function() {
@@ -49,60 +79,42 @@ var treeAnimationTimer = window.setInterval(function() {
 
 var treeGenTimer = window.setInterval(function() {
 	genTrees();
-}, 1000);
+}, 1000/gameSpeed);
 
 
-var cubeAnimationTimer;
-
-var renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
-
-
-
-//========================LOAD WORLD==========================//
-
-loadCamera();
-loadSun();
-loadLight();
-loadFloor(20, 95);
-loadCube();
-loadBaseTree();
-loadSounds();
-genTrees();
-
-
-//========================ANIMATE==========================//
+//================================================ANIMATE===================================================//
 var animate = function() {
 	if (gameOver) {
 		return;
 	}
+
+	updateParticles();
 	requestAnimationFrame(animate);
 
 	analyser.getByteFrequencyData(frequencyData);
 
 	camera.position.y = cameraOriginalY;
 	camera.position.y += getVolumeAvgNormalized(frequencyData);
-
 	renderer.render(scene, camera);
 
 };
 
 animate();
 
-//========================FUNCTIONS==========================//
+//================================================FUNCTIONS==================================================//
 
 
 function startCubeAnimationTimer() {
-	var moveDistance = (floor.width / grid.numCol) / 50;
+	var moveSpeed = 2 * gameSpeed;
+	var moveDistance = (floor.width / grid.numCol) / (100/moveSpeed);
 	cubeAnimationTimer = setInterval(function() {
 		if (cubeAnimationProperties.dir == 1) {
 			cube.position.x += moveDistance;
 		} else if (cubeAnimationProperties.dir == -1) {
 			cube.position.x -= moveDistance;
 		}
-		cubeAnimationProperties.progress += 2;
-		console.log(cubeAnimationProperties.progress);
+		cubeAnimationProperties.progress += moveSpeed;
+		// console.log(cubeAnimationProperties.progress);
 		if (cubeAnimationProperties.progress >= 100) {
 			stopCubeAnimationTimer();
 		}
@@ -133,12 +145,22 @@ function moveCube(dir) {
 
 function removeTree(i) {
 	scene.remove(myTrees[i].top);
-	scene.remove(myTrees[i].bot);
+	// console.log(myTrees[i].bot);
+	if (myTrees[i].bot != 0) {
+		// console.log("removed tree");
+		scene.remove(myTrees[i].bot);
+	}
+	else {
+		particleSystemActivate = false;
+		// console.log("removed particle system");
+	}
 	var removeTree = myTrees.splice(i, 1);
 	removeTree = null;
 }
 
 function detectCollision() {
+	if(myTrees.length <= 0 ) return;
+	var gridDistance = (floor.width / grid.numCol);
 	if (Math.abs(myTrees[0].top.position.z - cube.position.z) >= 1.5) {
 		return;
 	}
@@ -150,10 +172,30 @@ function detectCollision() {
 		var tree = myTrees[i].top;
 		cubex = cube.position.x;
 		treex = tree.position.x;
-		if (Math.abs(cubex - treex) < 1.75) {
-			console.log("Distance Between objects " + Math.abs(cubex - treex) + ", index i: " + i);
-			killGame();
+		distance = Math.abs(cubex - treex);
+		if (distance < 1.75) {
+			// console.log("Distance Between objects " + Math.abs(cubex - treex) + ", index i: " + i);
+			if (myTrees[i].bot != 0) {
+				killGame();
+			}
+			else{
+				powerUpSound.play();
+				gameSpeed += .1;
+
+				clearInterval(treeGenTimer);
+				treeGenTimer = window.setInterval(function() {
+					genTrees();
+				}, 1000/(gameSpeed));
+
+			}
+			return;
 		}
+		if (distance < 7.2) {
+			dodgeSound.play();
+			//console.log("near miss, distance :" + distance + ", grid Distance :" + 2 * gridDistance);
+		}
+
+		removeTree(i);
 
 		i++;
 	}
@@ -179,7 +221,7 @@ function moveTrees(d) {
 	for (index = 0; index < size; index++) {
 		value = myTrees[index];
 		moveTree(value, d);
-		if (value.bot.position.z > 1) {
+		if (value.top.position.z > 1) {
 			removeTree(index);
 			index--;
 			size--;
@@ -191,6 +233,7 @@ function genTrees() {
 	var locs = genRandomArray(0, grid.numCol - 1, 2);
 	for (i = 0; i < locs.length; i++) {
 		myTrees.push(makeTree(0, locs[i]));
+
 	}
 
 	rowAlt = (rowAlt + 1) % 2;
@@ -213,29 +256,50 @@ function genRandomArray(min, max, n) {
 
 function makeTree(row, col) {
 
-	cubeTop = baseTree.top.clone();
-	cubeBot = baseTree.bot.clone();
+	var randPower = Math.floor(Math.random() * 6) + 1;
 	row = row + 1;
-
 	var offset = 2;
-	cubeTop.position.z = -floor.adjustedHeight + ((floor.adjustedHeight / grid.numRow) * row) + offset;
-	cubeBot.position.z = -floor.adjustedHeight + ((floor.adjustedHeight / grid.numRow) * row) + offset;
-	cubeTop.position.x = -floor.adjustedWidth / 2 + ((floor.adjustedWidth / grid.numCol) * col) + offset;
-	cubeBot.position.x = -floor.adjustedWidth / 2 + ((floor.adjustedWidth / grid.numCol) * col) + offset;
+	if (randPower == 1 && !particleSystemActivate) {
+		// console.log ("making upgrade");
+		particleSystem.position.z = -floor.adjustedHeight + ((floor.adjustedHeight / grid.numRow) * row) + offset;
+		particleSystem.position.x = -floor.adjustedWidth / 2 + ((floor.adjustedWidth / grid.numCol) * col) + offset;
 
-	scene.add(cubeTop);
-	scene.add(cubeBot);
+		scene.add(particleSystem);
+		particleSystemActivate = true;
+		return (newTree = {
+			top: particleSystem,
+			bot: 0,
+			row:rowAlt
+		});
 
-	return (newTree = {
-		top: cubeTop,
-		bot: cubeBot,
-		row: rowAlt
-	});
+	} else {
+		cubeTop = baseTree.top.clone();
+		cubeBot = baseTree.bot.clone();
+
+		cubeTop.position.z = -floor.adjustedHeight + ((floor.adjustedHeight / grid.numRow) * row) + offset;
+		cubeBot.position.z = -floor.adjustedHeight + ((floor.adjustedHeight / grid.numRow) * row) + offset;
+		cubeTop.position.x = -floor.adjustedWidth / 2 + ((floor.adjustedWidth / grid.numCol) * col) + offset;
+		cubeBot.position.x = -floor.adjustedWidth / 2 + ((floor.adjustedWidth / grid.numCol) * col) + offset;
+
+		scene.add(cubeTop);
+		scene.add(cubeBot);
+
+		return (newTree = {
+			top: cubeTop,
+			bot: cubeBot,
+			row: rowAlt
+		});
+	}
+
 }
 
 function moveTree(tree, z) {
+	z = z * gameSpeed;
 	tree.top.position.z += z;
-	tree.bot.position.z += z;
+	// console.log(particleSystem.position.z);
+	if (tree.bot != 0) {
+		tree.bot.position.z += z;
+	} 
 
 }
 
@@ -360,7 +424,7 @@ function loadCamera() {
 	farPlane = 70;
 	camera.position.z = 10;
 	camera.position.x = 0;
-	camera.position.y = 1;
+	camera.position.y = 6;
 	camera.rotation.x = toRad(-20);
 
 	cameraOriginalY = camera.position.y;
@@ -386,6 +450,75 @@ function loadSounds() {
 	moveSound = new Audio('content/move.ogg');
 	dodgeSound = new Audio('content/dodge.ogg');
 	gameOverSound = new Audio('content/boom.mp3');
+	powerUpSound = new Audio('content/powerup.mp3');
+}
+
+
+function loadParticleSystem() {
+
+	particleCount = 10000,
+	particles = new THREE.Geometry(),
+	pMaterial = new THREE.ParticleBasicMaterial({
+		color: 0xEB1B1B,
+		size: .1,
+		// map: THREE.ImageUtils.loadTexture(
+		// 	"textures/particle.png"
+		// 	),
+	blending: THREE.AdditiveBlending,
+	transparent: true
+});
+
+	var range = 1.5;
+	// now create the individual particles
+	for (var p = 0; p < particleCount; p++) {
+
+		// create a particle with random
+		// position values, -250 -> 250
+		var particle = new THREE.Vector3(
+			Math.random() * range - range / 2,
+			Math.random() * range - range / 2,
+			Math.random() * range - range / 2
+			);
+
+		// add it to the geometry
+		particles.vertices.push(particle);
+	}
+
+	// create the particle system
+	particleSystem = new THREE.ParticleSystem(
+		particles,
+		pMaterial);
+
+	particleSystem.sortParticles = true;
+
+	// add it to the scene
+	// scene.add(particleSystem);
+
+
+}
+
+function updateParticles() {
+
+	// add some rotation to the system
+	// particleSystem.rotation.x += 0.01;
+
+	var pCount = particleCount;
+	while (pCount--) {
+		// get the particle
+		var particle = particles.vertices[pCount];
+
+		if (Math.abs(particle.y) > particleSystem.position.y + Math.random() * 8) {
+			particle.y = particleSystem.position.y;
+		}
+		// if (Math.abs(particle.x - particleSystem.position.x) > Math.random() * 0.5) {
+		// 	particle.x = particleSystem.position.x;
+		// }
+
+		particle.y += Math.random() * .05;
+		// particle.x += Math.random() * .1 * (Math.random() < 0.5 ? -1 : 1);
+		particleSystem.geometry.verticesNeedUpdate = true;
+
+	}
 }
 
 
@@ -415,7 +548,7 @@ function getVolumeAvgNormalized(buff) {
 	$.each(buff, function(index, value) {
 		sum += value;
 	});
-	return 3 * sum / (buff.length * 100);
+	return 4 * sum / (buff.length * 100);
 }
 
 function toRad(a) {
