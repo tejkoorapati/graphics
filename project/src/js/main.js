@@ -16,6 +16,9 @@ var floor;
 var sun;
 var lensFlare;
 var scene = new THREE.Scene();
+var backgroundScene;
+var backgroundCamera;
+
 var myTrees = [];
 var cubeAnimationProperties = {
 	moving: false,
@@ -24,6 +27,9 @@ var cubeAnimationProperties = {
 	progress: 0,
 	curCol: 0
 }
+
+
+
 var gameSpeed =1;
 var level = 0;
 var particleSystem;
@@ -59,8 +65,8 @@ document.body.appendChild(renderer.domElement);
 
 //================================================LOAD WORLD==================================================//
 
+loadBackground();
 loadCamera();
-loadSun();
 loadLight();
 loadFloor(20, 95);
 loadCube();
@@ -97,6 +103,10 @@ var animate = function() {
 
 	camera.position.y = cameraOriginalY;
 	camera.position.y += getVolumeAvgNormalized(frequencyData);
+	renderer.autoClear = false;
+            renderer.clear();
+        renderer.render(backgroundScene , backgroundCamera );
+
 	renderer.render(scene, camera);
 
 };
@@ -199,7 +209,7 @@ function detectCollision() {
 		if (distance < 1.75) {
 			// console.log("Distance Between objects " + Math.abs(cubex - treex) + ", index i: " + i);
 			if (myTrees[i].bot != 0) {
-				//killGame();
+				killGame();
 			}
 			else{
 				powerUpSound.play();
@@ -229,8 +239,8 @@ function killGame() {
 	clearInterval(treeGenTimer);
 	clearInterval(treeAnimationTimer);
 	clearInterval(cubeAnimationTimer);
-	sourceNode.stop();
 	gameOverSound.play();
+	sourceNode.stop();
 
 
 }
@@ -357,8 +367,30 @@ function loadBaseTree() {
 	}
 }
 
+function loadBackground(){
 
-function loadSun() {
+	        // Load the background texture
+        var texture = THREE.ImageUtils.loadTexture( 'textures/background.jpg' );
+	        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+	texture.repeat.set(1, 1);
+        var backgroundMesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(2, 2, 0),
+            new THREE.MeshBasicMaterial({
+                map: texture
+            }));
+
+        backgroundMesh.material.depthTest = false;
+        backgroundMesh.material.depthWrite = false;
+
+        // Create your background scene
+         backgroundScene = new THREE.Scene();
+         backgroundCamera = new THREE.Camera();
+        backgroundScene.add(backgroundCamera );
+        backgroundScene.add(backgroundMesh );
+}
+
+function loadLight() {
+
 	sun = new THREE.SpotLight(0x444444);
 	sun.shadowCameraNear = 0.1;
 	sun.position.set(-15, 20, -60);
@@ -366,9 +398,7 @@ function loadSun() {
 	sun.shadowCameraVisible = true;
 
 	scene.add(sun);
-}
 
-function loadLight() {
 	var ambient = new THREE.AmbientLight(0x444444);
 	scene.add(ambient);
 
@@ -378,7 +408,7 @@ function loadLight() {
 
 	var textureFlare0 = THREE.ImageUtils.loadTexture("textures/lensFlare.png");
 	var flareColor = new THREE.Color(0xffaacc);
-	lensFlare = new THREE.LensFlare(textureFlare0, 350, 0.0, THREE.AdditiveBlending, flareColor);
+	lensFlare = new THREE.LensFlare(textureFlare0, 10, 0.0, THREE.AdditiveBlending, flareColor);
 	lensFlare.position.set(sun.position.x, sun.position.y, sun.position.z);
 	scene.add(lensFlare);
 
