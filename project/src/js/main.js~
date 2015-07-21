@@ -157,28 +157,15 @@ function removeTree(i) {
 		// console.log("removed particle system");
 	}
 	var removeTree = myTrees.splice(i, 1);
-	removeTree.top = null;
-	removeTree.bot = null;
 	removeTree = null;
 }
 
 function increaseLevel(){
 	if(level == 2 ) return;
 	level++;
-	if(level == 1){
-	    floor.mesh.material.map = THREE.ImageUtils.loadTexture('textures/water.jpg');
-	    gameSpeed += 1;
-	}
-	if(level == 2){
-	    floor.mesh.material.map = THREE.ImageUtils.loadTexture('textures/ice.jpg');
-	    gameSpeed += 1;
-	 }
-	 
-    clearInterval(treeGenTimer);
-    treeGenTimer = window.setInterval(function() {
-	    genTrees();
-    }, 1000/(gameSpeed));
 	
+	
+
 }
 
 function detectCollision() {
@@ -199,7 +186,7 @@ function detectCollision() {
 		if (distance < 1.75) {
 			// console.log("Distance Between objects " + Math.abs(cubex - treex) + ", index i: " + i);
 			if (myTrees[i].bot != 0) {
-				//killGame();
+				killGame();
 			}
 			else{
 				powerUpSound.play();
@@ -410,7 +397,7 @@ function loadFloor(width, length) {
 		width: width,
 		height: length,
 		adjustedHeight: farPlane - camera.position.z,
-		adjustedWidth: width - 2,
+		adjustedWidth: width - 2
 		mesh: floorMesh
 	}
 
