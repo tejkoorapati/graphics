@@ -18,6 +18,7 @@ var lensFlare;
 var scene = new THREE.Scene();
 var backgroundScene;
 var backgroundCamera;
+var finalRender = false;
 
 var myTrees = [];
 var cubeAnimationProperties = {
@@ -92,10 +93,7 @@ var levelTimer = window.setInterval(function() {
 
 //================================================ANIMATE===================================================//
 var animate = function() {
-	if (gameOver) {
-		return;
-	}
-
+if(!gameOver){
 	updateParticles();
 	requestAnimationFrame(animate);
 
@@ -103,17 +101,24 @@ var animate = function() {
 
 	camera.position.y = cameraOriginalY;
 	camera.position.y += getVolumeAvgNormalized(frequencyData);
+	detectCollision();
+
+}
+
 	renderer.autoClear = false;
             renderer.clear();
         renderer.render(backgroundScene , backgroundCamera );
 
 	renderer.render(scene, camera);
 
+
 };
 
 animate();
-
+loadStats();
 //================================================FUNCTIONS==================================================//
+
+function loadStats (){var script=document.createElement('script');script.onload=function(){var stats=new Stats();stats.domElement.style.cssText='position:fixed;left:0;top:0;z-index:10000';document.body.appendChild(stats.domElement);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';document.head.appendChild(script);}
 
 
 function startCubeAnimationTimer() {
@@ -239,8 +244,10 @@ function killGame() {
 	clearInterval(treeGenTimer);
 	clearInterval(treeAnimationTimer);
 	clearInterval(cubeAnimationTimer);
+	clearInterval(levelTimer);
 	gameOverSound.play();
 	sourceNode.stop();
+	return;
 
 
 }
@@ -391,9 +398,10 @@ function loadBackground(){
 
 function loadLight() {
 
-	sun = new THREE.SpotLight(0x444444);
+	sun = new THREE.SpotLight(0xffffff);
+	// sun.color.setHSL( 0.55,0.9, 0.5 );
 	sun.shadowCameraNear = 0.1;
-	sun.position.set(-15, 20, -60);
+	sun.position.set(-15, 20, -68);
 	sun.castShadow = true;
 	sun.shadowCameraVisible = true;
 
@@ -402,19 +410,19 @@ function loadLight() {
 	var ambient = new THREE.AmbientLight(0x444444);
 	scene.add(ambient);
 
-	renderer.shadowMapEnabled = true;
-	renderer.shadowMapType = THREE.PCFSoftShadowMap;
 
 
 	var textureFlare0 = THREE.ImageUtils.loadTexture("textures/lensFlare.png");
 	var flareColor = new THREE.Color(0xffaacc);
-	lensFlare = new THREE.LensFlare(textureFlare0, 10, 0.0, THREE.AdditiveBlending, flareColor);
-	lensFlare.position.set(sun.position.x, sun.position.y, sun.position.z);
+	lensFlare = new THREE.LensFlare(textureFlare0, 1000, 0.0, THREE.AdditiveBlending, flareColor);
+	lensFlare.position.copy(sun.position);
 	scene.add(lensFlare);
 
 	// var light = new THREE.DirectionalLight(0x4444cc, 2);
 	// light.position.set(1, -1, 1).normalize();
 	// scene.add(light);
+	renderer.shadowMapEnabled = true;
+	renderer.shadowMapType = THREE.PCFSoftShadowMap;
 }
 
 
@@ -424,7 +432,7 @@ function loadFloor(width, length) {
 	var texture = THREE.ImageUtils.loadTexture('textures/earth.jpg');
 
 	texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-	texture.repeat.set(10, 30);
+	texture.repeat.set(5, 20);
 
 	var material = new THREE.MeshBasicMaterial();
 	material.map = texture;
@@ -585,7 +593,7 @@ function getSound(url) {
 
 	request.onload = function() {
 		context.decodeAudioData(request.response, function(buf) {
-			playSound(buf);
+			// playSound(buf);
 		});
 	}
 
