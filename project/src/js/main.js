@@ -129,7 +129,6 @@ function init() {
 function updateProgressBar(text, value) {
 	progress.animate(value);
 	progress.setText(text);
-	// progress.
 }
 
 
