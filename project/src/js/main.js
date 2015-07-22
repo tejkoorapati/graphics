@@ -8,6 +8,7 @@ var grid = {
 	cols: []
 }
 
+var loadingComplete = false;
 var camera;
 var farPlane;
 var cameraOriginalY;
@@ -19,6 +20,8 @@ var scene = new THREE.Scene();
 var backgroundScene;
 var backgroundCamera;
 var finalRender = false;
+var waterTexture;
+var iceTexture;
 
 var myTrees = [];
 var cubeAnimationProperties = {
@@ -31,7 +34,7 @@ var cubeAnimationProperties = {
 
 
 
-var gameSpeed =1;
+var gameSpeed = 1;
 var level = 0;
 var particleSystem;
 var particleCount;
@@ -56,74 +59,144 @@ var gameOver = false;
 
 
 
-
 var cubeAnimationTimer;
-var renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
 
+
+var treeAnimationTimer;
+
+var treeGenTimer;
+
+var levelTimer;
 
 
 //================================================LOAD WORLD==================================================//
 
-loadBackground();
-loadCamera();
-loadLight();
-loadFloor(20, 95);
-loadCube();
-loadBaseTree();
-loadSounds();
-loadParticleSystem();
 
+var progress;
+var renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
 
-var treeAnimationTimer = window.setInterval(function() {
-	moveTrees(.1);
-	if (!cubeAnimationProperties.moving) {
-		detectCollision();
-	}
-}, 5);
+$(document).ready(function() {
+	// Handler for .ready() called.
+	$("#preScreen").width(window.innerWidth);
+	$("#preScreen").height(window.innerHeight);
 
-var treeGenTimer = window.setInterval(function() {
-	genTrees();
-}, 1000/gameSpeed);
+	progress = new ProgressBar.Circle('#preScreen', {
+		width: window.innerWidth,
+		height: window.innerHeight,
+		color: '#FCB03C',
+		strokeWidth: 3,
+		trailWidth: 1,
+		duration: 1500,
+		text: {
+			value: '0'
+		}
+	});
+	init();
 
-var levelTimer = window.setInterval(function() {
-	increaseLevel();
-}, 1000 * 15);
+});
+var loadSegments = 8;
+var totalLoadProgress = 0;
 
-//================================================ANIMATE===================================================//
-var animate = function() {
-if(!gameOver){
-	updateParticles();
-	requestAnimationFrame(animate);
+function init() {
 
-	analyser.getByteFrequencyData(frequencyData);
-
-	camera.position.y = cameraOriginalY;
-	camera.position.y += getVolumeAvgNormalized(frequencyData);
-	detectCollision();
+	updateProgressBar("Loading World...", totalLoadProgress / loadSegments);
+	loadBackground();
+	totalLoadProgress++;
+	updateProgressBar("Loading World...", totalLoadProgress / loadSegments);
+	loadCamera();
+	totalLoadProgress++;
+	updateProgressBar("Loading World...", totalLoadProgress / loadSegments);
+	loadLight();
+	totalLoadProgress++;
+	updateProgressBar("Loading Objects...", totalLoadProgress / loadSegments);
+	loadFloor(20, 95);
+	totalLoadProgress++;
+	updateProgressBar("Loading Objects...", totalLoadProgress / loadSegments);
+	loadCube();
+	totalLoadProgress++;
+	updateProgressBar("Loading Objects...", totalLoadProgress / loadSegments);
+	loadBaseTree();
+	totalLoadProgress++;
+	updateProgressBar("Loading Particle System...", totalLoadProgress / loadSegments);
+	loadParticleSystem();
+	totalLoadProgress++;
+	updateProgressBar("Loading Some Nice Music...", totalLoadProgress / loadSegments);
+	loadSounds();
 
 }
 
+function updateProgressBar(text, value) {
+	progress.animate(value);
+	progress.setText(text);
+	// progress.
+}
+
+
+function initTimers() {
+
+	treeAnimationTimer = window.setInterval(function() {
+		moveTrees(.1);
+		if (!cubeAnimationProperties.moving) {
+			detectCollision();
+		}
+	}, 5);
+
+	treeGenTimer = window.setInterval(function() {
+		genTrees();
+	}, 1000 / gameSpeed);
+
+
+	levelTimer = window.setInterval(function() {
+		increaseLevel();
+	}, 1000 * 15);
+
+}
+
+//================================================ANIMATE===================================================//
+var animate = function() {
+	if (!gameOver) {
+		updateParticles();
+		requestAnimationFrame(animate);
+
+		analyser.getByteFrequencyData(frequencyData);
+
+		camera.position.y = cameraOriginalY;
+		camera.position.y += getVolumeAvgNormalized(frequencyData);
+
+	}
+
 	renderer.autoClear = false;
-            renderer.clear();
-        renderer.render(backgroundScene , backgroundCamera );
+	renderer.clear();
+	renderer.render(backgroundScene, backgroundCamera);
 
 	renderer.render(scene, camera);
 
 
 };
 
-animate();
 loadStats();
 //================================================FUNCTIONS==================================================//
 
-function loadStats (){var script=document.createElement('script');script.onload=function(){var stats=new Stats();stats.domElement.style.cssText='position:fixed;left:0;top:0;z-index:10000';document.body.appendChild(stats.domElement);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';document.head.appendChild(script);}
+function loadStats() {
+	var script = document.createElement('script');
+	script.onload = function() {
+		var stats = new Stats();
+		stats.domElement.style.cssText = 'position:fixed;left:0;top:0;z-index:10000';
+		document.body.appendChild(stats.domElement);
+		requestAnimationFrame(function loop() {
+			stats.update();
+			requestAnimationFrame(loop)
+		});
+	};
+	script.src = '//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';
+	document.head.appendChild(script);
+}
 
 
 function startCubeAnimationTimer() {
 	var moveSpeed = 2 * gameSpeed;
-	var moveDistance = (floor.width / grid.numCol) / (100/moveSpeed);
+	var moveDistance = (floor.width / grid.numCol) / (100 / moveSpeed);
 	cubeAnimationTimer = setInterval(function() {
 		if (cubeAnimationProperties.dir == 1) {
 			cube.position.x += moveDistance;
@@ -166,8 +239,7 @@ function removeTree(i) {
 	if (myTrees[i].bot != 0) {
 		// console.log("removed tree");
 		scene.remove(myTrees[i].bot);
-	}
-	else {
+	} else {
 		particleSystemActivate = false;
 		// console.log("removed particle system");
 	}
@@ -177,27 +249,29 @@ function removeTree(i) {
 	removeTree = null;
 }
 
-function increaseLevel(){
-	if(level == 2 ) return;
+function increaseLevel() {
+	if (level == 2) return;
 	level++;
-	if(level == 1){
-	    floor.mesh.material.map = THREE.ImageUtils.loadTexture('textures/water.jpg');
-	    gameSpeed += 1;
+	if (level == 1) {
+		floor.mesh.material.map = waterTexture;
+		sourceNode.playbackRate.value += .01;
+		gameSpeed += 1;
 	}
-	if(level == 2){
-	    floor.mesh.material.map = THREE.ImageUtils.loadTexture('textures/ice.jpg');
-	    gameSpeed += 1;
-	 }
-	 
-    clearInterval(treeGenTimer);
-    treeGenTimer = window.setInterval(function() {
-	    genTrees();
-    }, 1000/(gameSpeed));
-	
+	if (level == 2) {
+		floor.mesh.material.map = iceTexture;
+		sourceNode.playbackRate.value += .01;
+		gameSpeed += 1;
+	}
+
+	clearInterval(treeGenTimer);
+	treeGenTimer = window.setInterval(function() {
+		genTrees();
+	}, 1000 / (gameSpeed));
+
 }
 
 function detectCollision() {
-	if(myTrees.length <= 0 ) return;
+	if (myTrees.length <= 0) return;
 	var gridDistance = (floor.width / grid.numCol);
 	if (Math.abs(myTrees[0].top.position.z - cube.position.z) >= 1.5) {
 		return;
@@ -214,16 +288,17 @@ function detectCollision() {
 		if (distance < 1.75) {
 			// console.log("Distance Between objects " + Math.abs(cubex - treex) + ", index i: " + i);
 			if (myTrees[i].bot != 0) {
+				myTrees[i].bot.position.z = cube.position.z - 1.5;
+				myTrees[i].top.position.z = cube.position.z - 1.5;
 				killGame();
-			}
-			else{
+			} else {
 				powerUpSound.play();
 				gameSpeed += .1;
 
 				clearInterval(treeGenTimer);
 				treeGenTimer = window.setInterval(function() {
 					genTrees();
-				}, 1000/(gameSpeed));
+				}, 1000 / (gameSpeed));
 
 			}
 			return;
@@ -296,7 +371,7 @@ function genRandomArray(min, max, n) {
 
 function makeTree(row, col) {
 
-	var randPower = Math.floor(Math.random() * 6) + 1;
+	var randPower = Math.floor(Math.random() * 20) + 1;
 	row = row + 1;
 	var offset = 2;
 	if (randPower == 1 && !particleSystemActivate) {
@@ -309,7 +384,7 @@ function makeTree(row, col) {
 		return (newTree = {
 			top: particleSystem,
 			bot: 0,
-			row:rowAlt
+			row: rowAlt
 		});
 
 	} else {
@@ -339,7 +414,7 @@ function moveTree(tree, z) {
 	// console.log(particleSystem.position.z);
 	if (tree.bot != 0) {
 		tree.bot.position.z += z;
-	} 
+	}
 
 }
 
@@ -374,26 +449,26 @@ function loadBaseTree() {
 	}
 }
 
-function loadBackground(){
+function loadBackground() {
 
-	        // Load the background texture
-        var texture = THREE.ImageUtils.loadTexture( 'textures/background.jpg' );
-	        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+	// Load the background texture
+	var texture = THREE.ImageUtils.loadTexture('textures/background.jpg');
+	texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 	texture.repeat.set(1, 1);
-        var backgroundMesh = new THREE.Mesh(
-            new THREE.PlaneGeometry(2, 2, 0),
-            new THREE.MeshBasicMaterial({
-                map: texture
-            }));
+	var backgroundMesh = new THREE.Mesh(
+		new THREE.PlaneGeometry(2, 2, 0),
+		new THREE.MeshBasicMaterial({
+			map: texture
+		}));
 
-        backgroundMesh.material.depthTest = false;
-        backgroundMesh.material.depthWrite = false;
+	backgroundMesh.material.depthTest = false;
+	backgroundMesh.material.depthWrite = false;
 
-        // Create your background scene
-         backgroundScene = new THREE.Scene();
-         backgroundCamera = new THREE.Camera();
-        backgroundScene.add(backgroundCamera );
-        backgroundScene.add(backgroundMesh );
+	// Create your background scene
+	backgroundScene = new THREE.Scene();
+	backgroundCamera = new THREE.Camera();
+	backgroundScene.add(backgroundCamera);
+	backgroundScene.add(backgroundMesh);
 }
 
 function loadLight() {
@@ -418,9 +493,6 @@ function loadLight() {
 	lensFlare.position.copy(sun.position);
 	scene.add(lensFlare);
 
-	// var light = new THREE.DirectionalLight(0x4444cc, 2);
-	// light.position.set(1, -1, 1).normalize();
-	// scene.add(light);
 	renderer.shadowMapEnabled = true;
 	renderer.shadowMapType = THREE.PCFSoftShadowMap;
 }
@@ -451,6 +523,10 @@ function loadFloor(width, length) {
 		adjustedWidth: width - 2,
 		mesh: floorMesh
 	}
+
+
+	waterTexture = THREE.ImageUtils.loadTexture('textures/water.jpg');
+	iceTexture = THREE.ImageUtils.loadTexture('textures/ice.jpg')
 
 
 	scene.add(floorMesh);
@@ -495,7 +571,6 @@ function loadCamera() {
 
 function loadSounds() {
 
-	getSound('content/music.ogg');
 	context = new AudioContext();
 	sourceNode = context.createBufferSource();
 	splitter = context.createChannelSplitter();
@@ -507,12 +582,14 @@ function loadSounds() {
 	splitter.connect(analyser, 0);
 	splitter.connect(analyser2, 1);
 	sourceNode.connect(context.destination);
+	sourceNode.loop = true;
 	frequencyData = new Uint8Array(analyser.frequencyBinCount);
 
 	moveSound = new Audio('content/move.ogg');
 	dodgeSound = new Audio('content/dodge.ogg');
 	gameOverSound = new Audio('content/boom.mp3');
 	powerUpSound = new Audio('content/powerup.mp3');
+	getSound('content/music2.ogg');
 }
 
 
@@ -523,9 +600,9 @@ function loadParticleSystem() {
 	pMaterial = new THREE.ParticleBasicMaterial({
 		color: 0xEB1B1B,
 		size: .1,
-		// map: THREE.ImageUtils.loadTexture(
-		// 	"textures/particle.png"
-		// 	),
+			// map: THREE.ImageUtils.loadTexture(
+			// 	"textures/particle.png"
+			// 	),
 	blending: THREE.AdditiveBlending,
 	transparent: true
 });
@@ -587,22 +664,44 @@ function updateParticles() {
 
 function getSound(url) {
 	var request = new XMLHttpRequest();
+	request.addEventListener("progress", invokeProgress, false);
 
 	request.open('GET', url, true);
 	request.responseType = 'arraybuffer';
 
 	request.onload = function() {
 		context.decodeAudioData(request.response, function(buf) {
-			// playSound(buf);
+			playSound(buf);
 		});
 	}
 
 	request.send();
 }
 
+function invokeProgress(oEvent) {
+	if (oEvent.lengthComputable) {
+		var percentComplete = oEvent.loaded / oEvent.total;
+		updateProgressBar("Loading Some Nice Music...", (totalLoadProgress + percentComplete) / loadSegments);
+
+		// ...
+	} else {
+		// Unable to compute progress information since the total size is unknown
+	}
+}
+
 function playSound(buffer) {
 	sourceNode.buffer = buffer;
-	sourceNode.start(0);
+
+	updateProgressBar("Complete!", 1);
+	$("#preScreen").fadeOut(1500, function() {
+		document.body.appendChild(renderer.domElement);
+		initTimers();
+		sourceNode.start(0);
+		animate();
+	});
+
+
+
 }
 
 function getVolumeAvgNormalized(buff) {
@@ -610,7 +709,7 @@ function getVolumeAvgNormalized(buff) {
 	$.each(buff, function(index, value) {
 		sum += value;
 	});
-	return 4 * sum / (buff.length * 100);
+	return 2 * sum / (buff.length * 100);
 }
 
 function toRad(a) {
