@@ -22,6 +22,9 @@ var backgroundCamera;
 var finalRender = false;
 var waterTexture;
 var iceTexture;
+var sunDir = 1;
+var scoreElement;
+var score = 0;
 
 var myTrees = [];
 var cubeAnimationProperties = {
@@ -60,20 +63,19 @@ var gameOver = false;
 
 
 var cubeAnimationTimer;
-
-
 var treeAnimationTimer;
-
 var treeGenTimer;
-
 var levelTimer;
-
+var sunTimer;
 
 //================================================LOAD WORLD==================================================//
 
 
 var progress;
-var renderer = new THREE.WebGLRenderer();
+var renderer = new THREE.WebGLRenderer({
+	alpha: true,
+	antialias: true
+});
 renderer.setSize(window.innerWidth, window.innerHeight);
 
 $(document).ready(function() {
@@ -136,6 +138,7 @@ function initTimers() {
 
 	treeAnimationTimer = window.setInterval(function() {
 		moveTrees(.1);
+		updateScore();
 		if (!cubeAnimationProperties.moving) {
 			detectCollision();
 		}
@@ -150,11 +153,16 @@ function initTimers() {
 		increaseLevel();
 	}, 1000 * 15);
 
+	sunTimer = window.setInterval(function() {
+		moveSun();
+	}, 1);
+
 }
 
 //================================================ANIMATE===================================================//
 var animate = function() {
 	if (!gameOver) {
+		detectCollision();
 		updateParticles();
 		requestAnimationFrame(animate);
 
@@ -164,7 +172,6 @@ var animate = function() {
 		camera.position.y += getVolumeAvgNormalized(frequencyData);
 
 	}
-
 	renderer.autoClear = false;
 	renderer.clear();
 	renderer.render(backgroundScene, backgroundCamera);
@@ -172,9 +179,10 @@ var animate = function() {
 	renderer.render(scene, camera);
 
 
+
 };
 
-loadStats();
+// loadStats();
 //================================================FUNCTIONS==================================================//
 
 function loadStats() {
@@ -210,6 +218,32 @@ function startCubeAnimationTimer() {
 		detectCollision();
 	}, 1);
 
+}
+
+
+//modified threejs examples documentation
+function lensFlareUpdateCallback(object) {
+	var f, fl = object.lensFlares.length;
+	var flare;
+	var vecX = -object.positionScreen.x * 2;
+	var vecY = -object.positionScreen.y * 2;
+	for (f = 0; f < fl; f++) {
+		flare = object.lensFlares[f];
+		flare.x = object.positionScreen.x + vecX * flare.distance;
+		flare.y = object.positionScreen.y + vecY * flare.distance;
+		flare.rotation = 0;
+	}
+}
+
+function moveSun() {
+	if (sun.position.x >= 30) {
+		sunDir = -1;
+	} else if (sun.position.x <= -30) {
+		sunDir = 1;
+	}
+	sun.position.setX(sun.position.x + sunDir * .01);
+	sun.position.setY(-.02 * Math.pow(sun.position.x, 2) + 20)
+	lensFlare.position.copy(sun.position);
 }
 
 function stopCubeAnimationTimer() {
@@ -475,9 +509,9 @@ function loadLight() {
 	sun = new THREE.SpotLight(0xffffff);
 	// sun.color.setHSL( 0.55,0.9, 0.5 );
 	sun.shadowCameraNear = 0.1;
-	sun.position.set(-15, 20, -68);
+	sun.position.set(-15, 20, -60);
 	sun.castShadow = true;
-	sun.shadowCameraVisible = true;
+	// sun.shadowCameraVisible = true;
 
 	scene.add(sun);
 
@@ -487,9 +521,22 @@ function loadLight() {
 
 
 	var textureFlare0 = THREE.ImageUtils.loadTexture("textures/lensFlare.png");
+	var textureFlare2 = THREE.ImageUtils.loadTexture("textures/lensFlareArtifact1.png");
+	var textureFlare3 = THREE.ImageUtils.loadTexture("textures/lensFlareArtifact2.png");
 	var flareColor = new THREE.Color(0xffaacc);
-	lensFlare = new THREE.LensFlare(textureFlare0, 1000, 0.0, THREE.AdditiveBlending, flareColor);
+	lensFlare = new THREE.LensFlare(textureFlare0, 700, 0.0, THREE.AdditiveBlending, flareColor);
 	lensFlare.position.copy(sun.position);
+
+	// lensFlare.add(textureFlare2, 512, 0.0, THREE.AdditiveBlending);
+	// lensFlare.add(textureFlare2, 512, 0.0, THREE.AdditiveBlending);
+	// lensFlare.add(textureFlare2, 512, 0.0, THREE.AdditiveBlending);
+	lensFlare.add(textureFlare3, 60, 0.6, THREE.AdditiveBlending);
+	lensFlare.add(textureFlare3, 70, 0.7, THREE.AdditiveBlending);
+	lensFlare.add(textureFlare3, 120, 0.9, THREE.AdditiveBlending);
+	lensFlare.add(textureFlare3, 70, 1.0, THREE.AdditiveBlending);
+
+	lensFlare.customUpdateCallback = lensFlareUpdateCallback;
+
 	scene.add(lensFlare);
 
 	renderer.shadowMapEnabled = true;
@@ -497,6 +544,19 @@ function loadLight() {
 }
 
 
+function loadScore() {
+	scoreElement = document.createElement('div');
+	scoreElement.style.position = 'absolute';
+	//scoreElement.style.zIndex = 1;    // if you still don't see the label, try uncommenting this
+	scoreElement.style.width = 100;
+	scoreElement.style.height = 100;
+	scoreElement.style.color = 'aqua';
+	// scoreElement.style.backgroundColor = "blue";
+	scoreElement.innerHTML = "hi there!";
+	scoreElement.style.top = 0 + 'px';
+	scoreElement.style.left = 0 + 'px';
+	document.body.appendChild(scoreElement);
+}
 
 function loadFloor(width, length) {
 
@@ -550,7 +610,6 @@ function loadCube() {
 	cube.position.z = -floor.adjustedHeight + ((floor.adjustedHeight / grid.numRow) * row) + offset - .25;
 	cube.position.x = -floor.adjustedWidth / 2 + ((floor.adjustedWidth / grid.numCol) * col) + offset;
 	cube.position.y += .25;
-
 	cubeAnimationProperties.curCol = col;
 	scene.add(cube);
 
@@ -659,6 +718,10 @@ function updateParticles() {
 	}
 }
 
+function updateScore() {
+	score += 1 * gameSpeed;
+	scoreElement.innerHTML = "Score: " + Math.floor(score + 1 * gameSpeed);
+}
 
 
 function getSound(url) {
@@ -697,6 +760,7 @@ function playSound(buffer) {
 		initTimers();
 		sourceNode.start(0);
 		animate();
+		loadScore();
 	});
 
 
@@ -723,6 +787,7 @@ function getHeight(obj) {
 	return obj.geometry.toJSON().height
 }
 
+
 document.onkeydown = function(e) {
 	switch (e.keyCode) {
 		case 37:
@@ -731,6 +796,5 @@ document.onkeydown = function(e) {
 		case 39:
 		moveCube(1);
 		break;
-
 	}
 }
